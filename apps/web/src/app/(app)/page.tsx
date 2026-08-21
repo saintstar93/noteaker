@@ -7,6 +7,17 @@ import { DEMO_INBOX } from '@/lib/demo';
  * col design definitivo: è esattamente il traguardo della fase
  * ("una schermata vuota ma tua, con i colori giusti").
  */
+/**
+ * `new Date()` in un componente server viene valutato QUANDO la pagina viene
+ * prodotta. Senza questa riga Next la prerenderebbe a build time e la data
+ * resterebbe ferma al giorno del deploy. `force-dynamic` la fa generare a ogni
+ * richiesta.
+ *
+ * TODO (fase 1): quando Today leggerà i dati dell'utente dal database sarà
+ * dinamica di suo e questa riga si potrà togliere.
+ */
+export const dynamic = 'force-dynamic';
+
 export default function TodayPage() {
   const oggi = new Intl.DateTimeFormat('it-IT', {
     weekday: 'long',

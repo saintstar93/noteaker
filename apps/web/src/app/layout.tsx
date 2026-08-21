@@ -23,7 +23,15 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="it" className={inter.variable}>
-      <body>{children}</body>
+      {/*
+        suppressHydrationWarning solo sul <body>: le estensioni del browser
+        (Grammarly, gestori di password, traduttori) iniettano attributi qui
+        prima che React si accenda, e l'hydration segnalerebbe una differenza
+        che non dipende dal nostro codice.
+        Vale UN SOLO livello — gli attributi del body, non i figli — quindi
+        una vera differenza dentro l'app continua a essere segnalata.
+      */}
+      <body suppressHydrationWarning>{children}</body>
     </html>
   );
 }
