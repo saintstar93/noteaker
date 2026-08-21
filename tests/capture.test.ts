@@ -25,6 +25,7 @@ let userB = '';
 let tokenA = '';
 let tokenB = '';
 let tokenRevocato = '';
+let userRevocato = '';
 
 async function creaUtenteConToken(prefisso: string) {
   const email = `${prefisso}-${Date.now()}-${crypto.randomUUID().slice(0, 8)}@test.local`;
@@ -73,6 +74,7 @@ beforeAll(async () => {
 
   const revocato = await creaUtenteConToken('capture-revocato');
   tokenRevocato = revocato.token;
+  userRevocato = revocato.userId;
   await admin
     .from('capture_tokens')
     .update({ revoked_at: new Date().toISOString() })
@@ -80,7 +82,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  for (const id of [userA, userB]) if (id) await admin.auth.admin.deleteUser(id);
+  for (const id of [userA, userB, userRevocato]) if (id) await admin.auth.admin.deleteUser(id);
 });
 
 it('con un token valido salva in inbox e risponde 202', async () => {
