@@ -36,7 +36,7 @@ let b: Utente;
 let percorsoDiA: string;
 
 async function creaUtente(prefisso: string): Promise<Utente> {
-  const email = `${prefisso}-${Date.now()}@test.local`;
+  const email = `${prefisso}-${Date.now()}-${crypto.randomUUID().slice(0, 8)}@test.local`;
   const { data, error } = await admin.auth.admin.createUser({
     email,
     password: 'password123',

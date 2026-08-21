@@ -21,7 +21,7 @@ export const SERVICE =
 export const admin = createClient(URL_API, SERVICE, { auth: { persistSession: false } });
 
 export async function entraNellApp(context: BrowserContext) {
-  const email = `e2e-${Date.now()}@test.local`;
+  const email = `e2e-${Date.now()}-${crypto.randomUUID().slice(0, 8)}@test.local`;
   const { data, error } = await admin.auth.admin.createUser({
     email,
     password: 'password123',
