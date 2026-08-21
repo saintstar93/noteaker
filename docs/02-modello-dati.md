@@ -440,6 +440,21 @@ Tre punti che si sbagliano sempre:
 3. **`(select auth.uid())` invece di `auth.uid()`**: la sottoquery viene valutata
    una volta sola invece che riga per riga. Su tabelle grandi è la differenza tra
    millisecondi e secondi.
+4. **RLS non basta: serve anche il `GRANT`.** Sono due controlli distinti e
+   servono entrambi. `GRANT` dice *«questo ruolo può toccare questa tabella»*
+   (permesso sull'oggetto), RLS dice *«e comunque solo queste righe»* (permesso
+   sulla riga). Su una tabella creata da una migrazione senza `GRANT` espliciti,
+   l'API risponde `permission denied for table items` **prima** ancora di
+   valutare le policy. Verificato sul campo in fase 0. Quindi ogni migrazione che
+   crea una tabella finisce con:
+
+   ```sql
+   grant select, insert, update, delete on public.<tabella>
+     to authenticated, service_role;
+   ```
+
+   Il ruolo `anon` (chi non ha fatto login) resta volutamente **senza alcun
+   permesso**: è il rifiuto più esterno possibile, prima ancora delle policy.
 
 ---
 

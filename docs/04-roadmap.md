@@ -14,15 +14,18 @@ Spunta le caselle man mano. Questo file è lo stato del progetto.
 
 ## Fase 0 — Fondamenta (obiettivo: "esiste ed è online")
 
-- [ ] Monorepo pnpm: `apps/web`, `packages/db|core|ui`, `supabase/`
-- [ ] Next.js 16.3 + TypeScript strict + Tailwind v4 + shadcn/ui + Biome
-- [ ] Supabase: progetto cloud + `supabase start` locale con Docker
-- [ ] Auth: magic link + Google OAuth, middleware di sessione con `@supabase/ssr`
-- [ ] Migrazione 001: `profiles`, `spaces`, `collections`, `items` + **RLS su tutto**
-- [ ] Test automatico che fallisce se una tabella è senza RLS
-- [ ] Design system: token in `@theme`, `AppShell` (sidebar + centro + pannello)
-- [ ] Deploy su Vercel + variabili d'ambiente + `.env.example`
-- [ ] CI su GitHub Actions: `pnpm check` + `pnpm build` a ogni push
+- [x] Monorepo pnpm: `apps/web`, `packages/db|core|ui`, `supabase/`
+- [x] Next.js 16.3.1 + TypeScript strict + Tailwind v4 + Biome
+- [ ] shadcn/ui — *rimandato*: i primi componenti Radix servono davvero solo con
+      la command palette e i dialog (fase 2). Finora bastano componenti nostri.
+- [~] Supabase: `supabase start` locale ✅ · progetto cloud ⏳ (serve l'account di Daniele)
+- [x] Auth: magic link + Google OAuth, sessione con `@supabase/ssr` — **scritta,
+      non ancora provata end-to-end**: senza progetto cloud non c'è chi mandi l'email
+- [x] Migrazione 001: `profiles`, `spaces`, `collections`, `items` + **RLS su tutto**
+- [x] Test automatico che fallisce se una tabella è senza RLS (`tests/rls.test.ts`)
+- [x] Design system: token in `@theme`, `AppShell` (sidebar + centro + pannello)
+- [ ] Deploy su Vercel + variabili d'ambiente — `.env.example` ✅, deploy ⏳
+- [x] CI su GitHub Actions: `pnpm check` + `pnpm build` a ogni push
 
 **Fatto quando:** ti logghi in produzione dal telefono e vedi una schermata
 vuota ma tua, con i colori giusti.
@@ -114,6 +117,22 @@ l'app ti riporta il paragrafo esatto, con il link alla fonte.
    Le idee nuove si scrivono in fondo a questo file, in "Idee parcheggiate".
 4. **Il debito tecnico si annota**, non si nasconde: un `TODO:` nel codice e una
    riga qui sotto.
+
+## Debito tecnico aperto
+
+- **Dati dimostrativi** in `apps/web/src/lib/demo.ts`: Today e Inbox mostrano tre
+  item finti finché non c'è il database. Da togliere in fase 1 (vedi ADR 0002).
+- **`packages/db/src/database.types.ts` è generato dallo schema LOCALE**
+  (`pnpm db:types`). Va rigenerato dopo ogni migrazione, nello stesso commit.
+- **TypeScript pinnato alla 5.9.3** mentre la 7 è già stabile (ADR 0001).
+- **`collections.path` non ha ancora il trigger** che lo aggiorna quando si sposta
+  una cartella: arriva in fase 2 col drag&drop dell'albero.
+- **Nessun rate limit** ancora, perché non c'è ancora un endpoint pubblico.
+- **`analytics` (Logflare) disattivato** in `supabase/config.toml`: in locale non
+  parte in modo affidabile e non ci serve. In cloud lo fornisce Supabase.
+- **Il magic link non è mai stato cliccato davvero**: il flusso PKCE
+  (`/auth/callback`) è scritto ma verificato solo fino all'invio. Prima cosa da
+  provare a mano quando il progetto cloud esiste.
 
 ## Idee parcheggiate
 

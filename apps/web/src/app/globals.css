@@ -1,0 +1,90 @@
+@import "tailwindcss";
+
+/*
+  I DESIGN TOKEN (docs/03-design-system.md §2).
+  In Tailwind v4 la configurazione vive qui dentro, non in tailwind.config.js.
+  Ogni chiave di `@theme` genera automaticamente le utility corrispondenti:
+  `--color-surface` → `bg-surface` / `text-surface` / `border-surface`.
+  Regola: nessun colore hardcodato nei componenti. Mai.
+*/
+@theme {
+  /* superfici — dal più profondo al più in rilievo */
+  --color-bg: #0a0a0b;
+  --color-surface: #141416;
+  --color-surface-2: #1c1c20;
+  --color-surface-3: #26262b;
+  --color-border: #2a2a30;
+
+  /* testo */
+  --color-fg: #f5f5f4;
+  --color-fg-muted: #a1a1a6;
+  --color-fg-subtle: #6b6b72;
+  --color-on-accent: #0a0a0b;
+
+  /* accenti — sono i colori degli Space e dei kind, non decorazione */
+  --color-yellow: #f2d857;
+  --color-purple: #7c5cfc;
+  --color-green: #3ecf8e;
+  --color-red: #f4553d;
+  --color-blue: #3b82f6;
+  --color-teal: #14b8a6;
+
+  /* stato */
+  --color-success: #3ecf8e;
+  --color-warning: #f2d857;
+  --color-danger: #f4553d;
+
+  /* raggi — generosi, è la firma del concept */
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-xl: 32px;
+
+  /* tipografia */
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-display: var(--font-inter), system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, monospace;
+
+  /* curve di movimento (docs/03 §6) */
+  --ease-enter: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Focus sempre visibile: si sostituisce l'outline, non si toglie (docs/03 §7) */
+  :focus-visible {
+    outline: 2px solid var(--color-fg);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Un'animazione non è mai obbligatoria. Qui !important è voluto: deve
+     battere qualunque transizione dichiarata altrove. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      /* biome-ignore lint/complexity/noImportantStyles: deve battere ogni transizione */
+      animation-duration: 0.01ms !important;
+      /* biome-ignore lint/complexity/noImportantStyles: deve battere ogni transizione */
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@utility label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}

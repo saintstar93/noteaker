@@ -1,0 +1,26 @@
+{
+  "name": "noteaker",
+  "private": true,
+  "packageManager": "pnpm@11.22.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @noteaker/web dev",
+    "build": "pnpm --filter @noteaker/web build",
+    "start": "pnpm --filter @noteaker/web start",
+    "check": "biome check . && pnpm -r typecheck",
+    "check:fix": "biome check --write .",
+    "test": "vitest run",
+    "db:types": "supabase gen types typescript --local > packages/db/src/database.types.ts"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.9",
+    "@supabase/supabase-js": "^2.112.3",
+    "@types/pg": "^8.15.5",
+    "dotenv": "^17.2.1",
+    "pg": "^8.16.3",
+    "typescript": "5.9.3",
+    "vitest": "^4.1.11"
+  }
+}

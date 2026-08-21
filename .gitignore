@@ -1,0 +1,16 @@
+node_modules/
+.next/
+out/
+dist/
+.turbo/
+*.tsbuildinfo
+
+# segreti — mai in repo (docs/06-sicurezza.md §3.1)
+.env
+.env.local
+.env*.local
+.vercel
+
+.DS_Store
+*.log
+supabase/.temp/

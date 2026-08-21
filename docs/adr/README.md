@@ -50,4 +50,8 @@ decisione si rivelasse sbagliata.
 
 | # | Titolo | Stato |
 |---|---|---|
-| — | *(nessun ADR ancora scritto — le scelte iniziali sono in `01-architettura.md`)* | — |
+| [0001](0001-typescript-5-invece-di-7.md) | TypeScript 5.9 invece di 7.0 | Accettato |
+| [0002](0002-shell-con-dati-demo-in-fase-0.md) | Il guscio dell'app funziona con dati finti in Fase 0 | Accettato |
+
+Le scelte iniziali di stack non hanno un ADR: sono già motivate, con le
+alternative scartate, in `01-architettura.md`.

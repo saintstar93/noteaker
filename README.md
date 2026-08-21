@@ -25,4 +25,18 @@ BlockNote · Supabase (Postgres, RLS, pgvector, Edge Functions) · Vercel AI SDK
 | [`docs/06-sicurezza.md`](docs/06-sicurezza.md) | Modello di minaccia e checklist |
 | [`docs/adr/`](docs/adr/) | Decisioni architetturali |
 
-Stato: **Fase 0 non iniziata** — il repo contiene solo documentazione.
+Stato: **Fase 0 in corso** — il monorepo esiste, l'app parte, lo schema con RLS
+è scritto. Mancano il progetto Supabase cloud e il deploy su Vercel.
+
+## Sviluppo in locale
+
+```bash
+pnpm install
+cp .env.example apps/web/.env.local   # Next legge l'env dalla cartella dell'app,
+                                      # non dalla radice del monorepo
+pnpm dev                     # http://localhost:3000
+
+supabase start               # Postgres + Auth locali (serve Docker)
+pnpm test                    # test RLS: richiede supabase start attivo
+pnpm check && pnpm build     # devono passare prima di ogni push
+```

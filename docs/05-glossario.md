@@ -56,6 +56,20 @@ server**: React genera dietro le quinte l'endpoint HTTP. Comodissimo per i form.
 Attenzione: è una porta aperta verso il server, quindi va sempre autenticata e
 validata come un endpoint qualsiasi.
 
+**Route Handler.** Un endpoint HTTP dentro l'app Next: un file `route.ts` in una
+cartella di `app/`, che esporta `GET`, `POST`… La differenza con una Server
+Action: la Route Handler ha un URL pubblico e la chiama chiunque (un webhook,
+l'estensione Chrome), la Server Action la chiama solo la tua interfaccia.
+
+**Route group.** Una cartella con il nome tra parentesi, es. `app/(app)/`. Serve
+solo a raggruppare pagine sotto un layout comune: **non** aggiunge un pezzo
+all'URL. `app/(app)/inbox/page.tsx` risponde a `/inbox`, non a `/app/inbox`.
+
+**Proxy (fino a Next 16.2 si chiamava *middleware*).** Codice che gira **prima**
+di ogni richiesta, su Edge runtime: sta davanti all'app, non dentro. Noi lo usiamo
+per rinnovare la sessione e rimandare al login. Non è una barriera di sicurezza:
+quella è RLS, dentro il database.
+
 **Bundler / Turbopack.** Il programma che impacchetta decine di file sorgente in
 pochi file ottimizzati per il browser. Turbopack è quello di Next.js, scritto in
 Rust, molto più veloce del precedente (Webpack).
@@ -103,6 +117,11 @@ scrive nessuno a mano.
 **Trigger.** Codice che il database esegue automaticamente quando succede
 qualcosa (dopo un `INSERT`, prima di un `UPDATE`). Noi lo usiamo per mettere in
 coda i job di embedding.
+
+**`GRANT` / ruolo.** Il permesso *sull'oggetto*: dice quali ruoli (`anon`,
+`authenticated`, `service_role`) possono leggere o scrivere una tabella. Viene
+prima di RLS, che invece filtra *le righe*. Servono tutti e due: senza `GRANT`
+il database rifiuta la richiesta ancora prima di guardare le policy.
 
 **RLS (Row Level Security).** Regole di accesso scritte **dentro** il database:
 "un utente vede solo le righe con il suo `user_id`". Nessuna query può aggirarle.
