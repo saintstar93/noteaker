@@ -17,9 +17,32 @@ configurazione invece di un'app nativa da mantenere.
 
 ---
 
+## 0. L'indirizzo a cui parlare
+
+In locale, Noteaker gira sulla porta **3100** (non la 3000: là girava un altro
+progetto, e due server sulla stessa porta rendono imprevedibile chi risponde).
+
+| Da dove | Indirizzo |
+|---|---|
+| Dal Mac | `http://localhost:3100` |
+| **Dall'iPhone**, stesso Wi-Fi | `http://192.168.1.122:3100` |
+
+L'IP del Mac lo ricavi in ogni momento con:
+
+```bash
+ipconfig getifaddr en0
+```
+
+⚠️ **Cambia** quando il router riassegna gli indirizzi. Se un giorno lo Shortcut
+smette di funzionare senza motivo, ricontrolla prima questo. Quando l'app sarà
+su Vercel, l'indirizzo diventerà un dominio stabile e il problema sparisce.
+
+---
+
 ## 1. Crea il token
 
-Nell'app, **Impostazioni → Cattura → Crea token**. Chiamalo `iPhone`.
+Nell'app, **sidebar → Impostazioni** (`http://localhost:3100/impostazioni`) →
+**Crea token**. Chiamalo `iPhone`.
 
 Il token si vede **una volta sola**: copialo subito. In database c'è solo la
 sua impronta, quindi nemmeno l'app può rileggertelo. Se lo perdi, ne crei un
@@ -44,7 +67,7 @@ Cerca e aggiungi **Ottieni contenuto da URL**, poi configurala così:
 
 | Campo | Valore |
 |---|---|
-| URL | `https://TUO-DOMINIO/api/capture` |
+| URL | `http://192.168.1.122:3100/api/capture` (in locale) |
 | Metodo | `POST` |
 | Intestazioni | `X-Noteaker-Token` → il token copiato prima |
 | | `Content-Type` → `application/json` |
@@ -57,9 +80,10 @@ Nel corpo JSON, due campi:
 | `url` | Testo | **Input dello Shortcut** (la variabile magica) |
 | `source` | Testo | `ios_shortcut` |
 
-> Finché lavori in locale, l'indirizzo è quello del Mac sulla rete di casa
-> (`http://192.168.x.x:3000/api/capture`) e il telefono deve stare sullo stesso
-> Wi-Fi. Quando l'app sarà su Vercel, diventa il dominio vero.
+> Il telefono deve stare sullo **stesso Wi-Fi** del Mac, e `pnpm dev` deve
+> essere acceso. Questo percorso è stato provato davvero: una chiamata dalla
+> rete a quell'indirizzo arriva, riconosce il tipo di contenuto e finisce in
+> Inbox.
 
 ### c. Dagli un nome
 
@@ -84,7 +108,8 @@ elaboro dopo".
 | `400` | Il corpo non ha né `url` né `text` | Controlla che la variabile "Input dello Shortcut" sia davvero dentro il campo `url` |
 | `413` | Contenuto troppo grande | Stai mandando un testo enorme: manda l'URL |
 | `429` | Più di 60 catture in un minuto | Aspetta un minuto; se non sei stato tu, **revoca il token** |
-| Nessuna risposta | Il telefono non raggiunge il Mac | Stesso Wi-Fi? Il `pnpm dev` è acceso? |
+| Nessuna risposta | Il telefono non raggiunge il Mac | Stesso Wi-Fi? `pnpm dev` acceso? L'IP è ancora quello (`ipconfig getifaddr en0`)? |
+| Risponde ma è un'altra app | Un altro progetto occupa la stessa porta | Noteaker sta sulla **3100**; controlla con `lsof -nP -iTCP:3100 -sTCP:LISTEN` |
 
 ---
 

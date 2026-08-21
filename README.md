@@ -40,7 +40,7 @@ cloud e il deploy su Vercel.
 pnpm install
 cp .env.example apps/web/.env.local   # Next legge l'env dalla cartella dell'app,
                                       # non dalla radice del monorepo
-pnpm dev                     # http://localhost:3000
+pnpm dev                     # http://localhost:3100
 
 supabase start               # Postgres + Auth locali (serve Docker)
 pnpm test                    # 35 test: RLS, isolamento fra utenti, trigger, abitudini

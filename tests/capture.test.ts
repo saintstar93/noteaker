@@ -11,7 +11,7 @@ import { afterAll, beforeAll, expect, it } from 'vitest';
  * Richiede `supabase start` E `pnpm dev` (l'endpoint gira dentro Next).
  */
 
-const APP = process.env.E2E_BASE_URL ?? 'http://localhost:3000';
+const APP = process.env.E2E_BASE_URL ?? 'http://localhost:3100';
 const ENDPOINT = `${APP}/api/capture`;
 const URL_API = process.env.SUPABASE_API_URL ?? 'http://127.0.0.1:54321';
 const SERVICE =
