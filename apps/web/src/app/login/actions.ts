@@ -4,7 +4,7 @@ import type { Route } from 'next';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
-import { isSupabaseConfigured } from '@/lib/env';
+import { isSupabaseConfigured, isSupabaseLocale, UTENTE_DI_SVILUPPO } from '@/lib/env';
 import { createClient } from '@/lib/supabase/server';
 
 /**
@@ -64,4 +64,36 @@ export async function signInWithGoogle(): Promise<void> {
   // `typedRoutes` tipizza redirect() sulle rotte INTERNE dell'app; qui l'URL
   // è quello di Google, quindi il cast è corretto e non nasconde un errore.
   redirect(data.url as Route);
+}
+
+/**
+ * ACCESSO RAPIDO — solo sullo stack locale.
+ *
+ * Ogni `supabase db reset` cancella tutti gli utenti, e rifare il giro del
+ * magic link su Mailpit a ogni giro è una tassa inutile. `supabase/seed.sql`
+ * ricrea sempre lo stesso utente con la stessa password; questa azione ci
+ * entra dentro in un clic.
+ *
+ * Il controllo `isSupabaseLocale` non è una formalità: senza, questa funzione
+ * sarebbe un endpoint pubblico che tenta un login con credenziali note. In
+ * produzione la condizione è falsa e la funzione esce subito — e comunque
+ * quell'utente lì non esiste, perché il seed non viene mai applicato al
+ * progetto cloud.
+ */
+export async function entraComeSviluppo(_prev: LoginState): Promise<LoginState> {
+  if (!isSupabaseLocale) {
+    return { ok: false, message: "L'accesso rapido esiste solo sullo stack locale." };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.signInWithPassword(UTENTE_DI_SVILUPPO);
+
+  if (error) {
+    return {
+      ok: false,
+      message: `${error.message}. Hai lanciato \`supabase db reset\` almeno una volta?`,
+    };
+  }
+
+  redirect('/');
 }

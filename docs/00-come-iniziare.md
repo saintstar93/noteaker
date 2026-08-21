@@ -67,6 +67,17 @@ Il punto importante è quel **"poi fermati"**. Il momento in cui i progetti con
 gli assistenti vanno a rotoli è quando li si lascia correre per venti minuti
 senza guardare. Fase 0 è anche il tuo addestramento: vale la pena andare piano.
 
+## 3-bis. Entrare nell'app in locale
+
+`http://localhost:3100` → **Entra come Daniele**. Nessuna email.
+
+Quel pulsante compare solo quando l'app parla col Supabase sul tuo Mac, e
+l'utente dietro (`daniele@noteaker.local`) lo crea `supabase/seed.sql` a ogni
+`supabase db reset`. In produzione il pulsante non esiste e quell'utente non c'è.
+
+Se preferisci provare il flusso vero col magic link: le email in locale non
+partono, le intercetta **Mailpit** su http://127.0.0.1:54324.
+
 ## 4. Come lavorare, in pratica
 
 **Una sessione = una casella della roadmap.** Quando una casella è finita, fai

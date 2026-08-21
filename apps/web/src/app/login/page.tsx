@@ -1,4 +1,4 @@
-import { isSupabaseConfigured } from '@/lib/env';
+import { isSupabaseConfigured, isSupabaseLocale } from '@/lib/env';
 import { LoginForm } from './login-form';
 
 export default function LoginPage() {
@@ -10,7 +10,7 @@ export default function LoginPage() {
           Un posto solo per quello che leggi, guardi e devi fare.
         </p>
       </div>
-      <LoginForm configured={isSupabaseConfigured} />
+      <LoginForm configured={isSupabaseConfigured} locale={isSupabaseLocale} />
     </main>
   );
 }

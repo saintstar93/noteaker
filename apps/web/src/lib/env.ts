@@ -34,3 +34,26 @@ export function requirePublicEnv(): PublicEnv {
   }
   return publicEnv;
 }
+
+/**
+ * Siamo sullo stack Supabase LOCALE?
+ *
+ * Si guarda l'indirizzo di Supabase e non `NODE_ENV`: `NODE_ENV` dice come è
+ * stata compilata l'app, non a quale database sta parlando. Un `pnpm build`
+ * fatto sul portatile ma puntato al progetto cloud sarebbe "production" con
+ * NODE_ENV e locale con questo controllo — ed è questo che conta.
+ *
+ * Serve a far esistere le scorciatoie di sviluppo (come l'accesso rapido nella
+ * pagina di login) SOLO quando il database è quello finto sul Mac. In
+ * produzione l'indirizzo è quello di Supabase cloud e la condizione è falsa,
+ * quindi quel codice non viene nemmeno renderizzato.
+ */
+export const isSupabaseLocale =
+  publicEnv?.NEXT_PUBLIC_SUPABASE_URL.includes('127.0.0.1') === true ||
+  publicEnv?.NEXT_PUBLIC_SUPABASE_URL.includes('localhost') === true;
+
+/** L'utente creato da `supabase/seed.sql`. Esiste solo in locale. */
+export const UTENTE_DI_SVILUPPO = {
+  email: 'daniele@noteaker.local',
+  password: 'noteaker',
+} as const;

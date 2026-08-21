@@ -51,5 +51,11 @@ pnpm test:e2e                # Playwright: l'editor a blocchi in un browser vero
                              # (serve pnpm dev; la prima volta: playwright install chromium)
 ```
 
-Le email in locale non arrivano davvero: le intercetta **Mailpit** su
-http://127.0.0.1:54324. Supabase Studio è su http://127.0.0.1:54323.
+**Per entrare in locale** non serve l'email: nella pagina di login c'è
+«Entra come Daniele», un pulsante che esiste solo quando l'app punta al
+Supabase locale. L'utente lo crea `supabase/seed.sql` a ogni
+`supabase db reset`, insieme a quattro Space di partenza.
+
+Se vuoi comunque provare il magic link, le email non partono davvero: le
+intercetta **Mailpit** su http://127.0.0.1:54324. Supabase Studio è su
+http://127.0.0.1:54323.
