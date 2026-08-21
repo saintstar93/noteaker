@@ -57,8 +57,9 @@ diversi senza mai aprire l'app apposta.
 
 ## Fase 2 — Note, organizzazione, ricerca (obiettivo: "sostituisce Notion")
 
-- [ ] Editor **BlockNote** + salvataggio con debounce + optimistic UI
-- [ ] Doppia scrittura `body` (jsonb) / `body_text` (testo piatto)
+- [x] Editor **BlockNote** + salvataggio con debounce (800 ms) — tabelle, blocchi
+      di codice, immagini con drag&drop, autolink, interfaccia in italiano
+- [x] Doppia scrittura `body` (jsonb) / `body_text` (markdown appiattito)
 - [ ] Blocchi custom: `video-embed` con timestamp, `reel-card`, `highlight`, `book-quote`
 - [x] Spaces e Collections: creazione, albero, trigger sul `path` — **manca il
       drag&drop** per spostare una cartella (si può solo creare, rinominare, eliminare)
@@ -136,8 +137,12 @@ l'app ti riporta il paragrafo esatto, con il link alla fonte.
 - **`collections.path` non ha ancora il trigger** che lo aggiorna quando si sposta
   una cartella: arriva in fase 2 col drag&drop dell'albero.
 - **Nessun rate limit** ancora, perché non c'è ancora un endpoint pubblico.
-- **Editor note provvisorio**: titolo + textarea su `body_text`, salvataggio con
-  debounce a 800 ms. BlockNote arriva in fase 2 (ADR 0003).
+- **I file non si cancellano** quando cancelli la nota che li conteneva: restano
+  nello storage a occupare spazio (ADR 0004). Serve una pulizia.
+- **L'URL firmato delle immagini dura un'ora**: una nota lasciata aperta più a
+  lungo mostra le immagini rotte finché non ricarichi.
+- **Blocchi custom non ancora fatti**: `video-embed` con timestamp, `reel-card`,
+  `highlight`, `book-quote` (sono una casella a parte della fase 2).
 - **Kanban senza riordino manuale**: `position` esiste in tabella ma il drag
   imposta solo lo stato.
 - **`useState` + `useEffect` per l'optimistic UI** in cinque componenti;

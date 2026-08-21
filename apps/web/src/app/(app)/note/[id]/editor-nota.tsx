@@ -2,51 +2,42 @@
 
 import { ArrowLeft, Check, Loader2 } from 'lucide-react';
 import type { Route } from 'next';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { useEffect, useRef, useState } from 'react';
-import { AreaTesto } from '@/components/ui';
-import { salvaNota } from '@/lib/actions';
+import { useState } from 'react';
 import type { ItemRow } from '@/lib/types';
 
 /**
- * Editor provvisorio: titolo + testo semplice.
+ * Il guscio della pagina nota: intestazione, indicatore di salvataggio, e
+ * l'editor caricato **solo nel browser**.
  *
- * L'editor a blocchi vero (BlockNote, stile Notion, con `/` per i comandi e i
- * blocchi custom per video e highlight) è la Fase 2. Metterlo adesso
- * significherebbe rifare due volte la parte di salvataggio, perché BlockNote
- * scrive `body` in jsonb mentre qui scriviamo solo `body_text`. Il testo
- * scritto ora non va perso: `body_text` è la stessa colonna che userà la
- * ricerca.
- *
- * DEBOUNCE: non si salva a ogni tasto — si aspetta che tu smetta di scrivere
- * per 800 ms. Senza, ogni lettera sarebbe una scrittura sul database.
+ * `dynamic(..., { ssr: false })` dice a Next di non provare a renderizzare
+ * BlockNote sul server. ProseMirror, che gli sta sotto, ha bisogno del DOM per
+ * costruirsi, e sul server il DOM non esiste: senza questa riga la pagina
+ * esploderebbe al primo caricamento. In cambio, l'editor arriva un istante
+ * dopo il resto — da qui il segnaposto qui sotto.
  */
-/**
- * `tornaA` è tipizzata `Route` e non `string` perché `typedRoutes` controlla a
- * compilazione che ogni link punti a una rotta che esiste davvero. Qui l'URL è
- * costruito a runtime dalla cartella dell'item, quindi il controllo lo facciamo
- * a monte: chi chiama passa un percorso interno valido.
- */
-export function EditorNota({ item, tornaA }: { item: ItemRow; tornaA: Route }) {
-  const [titolo, setTitolo] = useState(item.title ?? '');
-  const [testo, setTesto] = useState(item.body_text ?? '');
+const Editor = dynamic(() => import('./blocknote-editor').then((m) => m.BlocknoteEditor), {
+  ssr: false,
+  loading: () => (
+    <div className="flex flex-col gap-4" aria-hidden>
+      <div className="h-10 w-2/3 animate-pulse rounded-sm bg-surface-2" />
+      <div className="h-4 w-full animate-pulse rounded-sm bg-surface-2" />
+      <div className="h-4 w-5/6 animate-pulse rounded-sm bg-surface-2" />
+    </div>
+  ),
+});
+
+export function EditorNota({
+  item,
+  userId,
+  tornaA,
+}: {
+  item: ItemRow;
+  userId: string;
+  tornaA: Route;
+}) {
   const [stato, setStato] = useState<'fermo' | 'salvo' | 'salvato'>('fermo');
-  const primoRender = useRef(true);
-
-  useEffect(() => {
-    if (primoRender.current) {
-      primoRender.current = false;
-      return;
-    }
-
-    setStato('salvo');
-    const timer = setTimeout(async () => {
-      await salvaNota(item.id, titolo, testo);
-      setStato('salvato');
-    }, 800);
-
-    return () => clearTimeout(timer);
-  }, [titolo, testo, item.id]);
 
   return (
     <div className="mx-auto flex w-full max-w-[68ch] flex-col gap-4">
@@ -71,26 +62,7 @@ export function EditorNota({ item, tornaA }: { item: ItemRow; tornaA: Route }) {
         </span>
       </div>
 
-      <input
-        value={titolo}
-        onChange={(e) => setTitolo(e.target.value)}
-        aria-label="Titolo della nota"
-        placeholder="Senza titolo"
-        className="w-full bg-transparent font-display font-extrabold text-[32px] leading-tight tracking-[-0.02em] placeholder:text-fg-subtle"
-      />
-
-      {/*
-        Larghezza massima 68 caratteri: oltre, l'occhio perde la riga
-        successiva quando torna a capo (docs/03 §4).
-      */}
-      <AreaTesto
-        value={testo}
-        onChange={(e) => setTesto(e.target.value)}
-        aria-label="Contenuto della nota"
-        placeholder="Scrivi qui…"
-        rows={22}
-        className="bg-transparent p-0 text-[16px] leading-[1.7]"
-      />
+      <Editor item={item} userId={userId} onStatoSalvataggio={setStato} />
     </div>
   );
 }

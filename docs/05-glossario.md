@@ -137,6 +137,17 @@ dimostrare chi è. Contiene l'id utente e una scadenza.
 stare nel browser. La seconda **bypassa RLS** ed è onnipotente: solo lato server,
 mai in un file che finisce nel browser.
 
+**Bucket / Storage.** Il posto dove finiscono i file (immagini, allegati). In
+Supabase i byte stanno su disco ma i **metadati stanno in una tabella Postgres**
+(`storage.objects`): quindi i permessi sui file si scrivono con RLS, esattamente
+come quelli sulle righe. Un bucket *pubblico* è leggibile da chiunque conosca
+l'URL; il nostro è privato.
+
+**URL firmato.** Un indirizzo temporaneo che contiene una firma crittografica e
+una scadenza. Serve a dare accesso a un file privato senza renderlo pubblico:
+vale un'ora, poi non funziona più. Per questo nella nota salviamo il *percorso*
+del file, non l'URL — altrimenti la nota si romperebbe da sola (ADR 0004).
+
 **Edge Function.** Una funzione TypeScript che gira sui server di Supabase (in
 Deno), vicino all'utente. La usiamo per il lavoro pesante e per il codice che
 deve essere invocabile dal database.

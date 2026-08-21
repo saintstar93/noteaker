@@ -44,6 +44,8 @@ pnpm test                    # 35 test: RLS, isolamento fra utenti, trigger, abi
 pnpm check && pnpm build     # devono passare prima di ogni push
 pnpm smoke                   # chiede ogni pagina con una sessione vera e
                              # controlla che mostri davvero i dati (serve pnpm dev)
+pnpm test:e2e                # Playwright: l'editor a blocchi in un browser vero
+                             # (serve pnpm dev; la prima volta: playwright install chromium)
 ```
 
 Le email in locale non arrivano davvero: le intercetta **Mailpit** su

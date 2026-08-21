@@ -10,6 +10,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@blocknote/core": "0.54.0",
+    "@blocknote/mantine": "0.54.0",
+    "@blocknote/react": "0.54.0",
     "@noteaker/core": "workspace:*",
     "@noteaker/db": "workspace:*",
     "@noteaker/ui": "workspace:*",

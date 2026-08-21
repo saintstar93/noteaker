@@ -1,6 +1,13 @@
 'use server';
 
-import { buildRrule, SPACE_COLORS, toDateKey, WEEKDAYS, type Weekday } from '@noteaker/core';
+import {
+  blocchiSchema,
+  buildRrule,
+  SPACE_COLORS,
+  toDateKey,
+  WEEKDAYS,
+  type Weekday,
+} from '@noteaker/core';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { requireUser } from '@/lib/auth';
@@ -121,16 +128,38 @@ export async function creaNota(formData: FormData) {
   return data?.id ?? null;
 }
 
-export async function salvaNota(id: string, titolo: string, testo: string) {
+/**
+ * Salva la nota. DUE colonne, e la ragione conta (docs/01-architettura.md §4):
+ *  - `body`      jsonb — la struttura dei blocchi, verità per l'editor;
+ *  - `body_text` testo — lo stesso contenuto appiattito in markdown, che è ciò
+ *                su cui lavorano la ricerca full-text di Postgres e, dalla
+ *                fase 3, gli embedding. Rigenerarlo a ogni ricerca sarebbe
+ *                lento: lo scriviamo insieme al JSON.
+ */
+export async function salvaNota(id: string, titolo: string, testo: string, blocchi?: unknown) {
   const { supabase } = await requireUser();
 
   const dati = z
-    .object({ id: uuid, title: z.string().trim().max(200), body_text: z.string().max(200_000) })
-    .parse({ id, title: titolo, body_text: testo });
+    .object({
+      id: uuid,
+      title: z.string().trim().max(200),
+      body_text: z.string().max(500_000),
+      body: blocchiSchema.nullable(),
+    })
+    .parse({
+      id,
+      title: titolo,
+      body_text: testo,
+      body: Array.isArray(blocchi) ? blocchi : null,
+    });
 
   await supabase
     .from('items')
-    .update({ title: dati.title || 'Senza titolo', body_text: dati.body_text })
+    .update({
+      title: dati.title || 'Senza titolo',
+      body_text: dati.body_text,
+      ...(dati.body ? { body: dati.body } : {}),
+    })
     .eq('id', dati.id);
 
   revalidatePath(`/note/${dati.id}`);
