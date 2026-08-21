@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { CAPTURE_SOURCES, ITEM_KINDS, type ItemKind } from './types.js';
+import { CAPTURE_SOURCES, ITEM_KINDS, type ItemKind } from './types';
 
 /**
  * Schema del payload di POST /api/capture (fase 1).

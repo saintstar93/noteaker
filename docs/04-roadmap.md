@@ -34,6 +34,12 @@ vuota ma tua, con i colori giusti.
 
 ## Fase 1 — Cattura e Inbox (obiettivo: "smetto di usare Notion per salvare cose")
 
+> ⚠️ **Fase saltata, ed è il debito più grosso aperto.** Il 21 agosto 2026 si è
+> scelto di anticipare produttività e organizzazione (ADR 0003). Risultato:
+> l'Inbox esiste e sa smistare, ma **nessun canale la alimenta** — niente
+> estensione, niente Shortcut, niente bot. Si riempie solo con note scritte a
+> mano. È la prossima cosa da fare.
+
 - [ ] `POST /api/capture`: token → Zod → insert → 202. Rate limit. Test.
 - [ ] Sistema di `capture_tokens`: creazione, visualizzazione una tantum, revoca
 - [ ] Coda `pgmq` + `pg_cron` + `pg_net` + prima Edge Function (`enrich`)
@@ -54,7 +60,8 @@ diversi senza mai aprire l'app apposta.
 - [ ] Editor **BlockNote** + salvataggio con debounce + optimistic UI
 - [ ] Doppia scrittura `body` (jsonb) / `body_text` (testo piatto)
 - [ ] Blocchi custom: `video-embed` con timestamp, `reel-card`, `highlight`, `book-quote`
-- [ ] Spaces e Collections: creazione, albero, drag&drop, trigger sul `path`
+- [x] Spaces e Collections: creazione, albero, trigger sul `path` — **manca il
+      drag&drop** per spostare una cartella (si può solo creare, rinominare, eliminare)
 - [ ] Tag, backlink `[[...]]` con autocomplete, pannello "collegate a questa"
 - [ ] **Ricerca full-text** + Command palette ⌘K
 - [ ] Smart View (query salvate) e filtri per kind, tag, dominio, data
@@ -84,10 +91,11 @@ l'app ti riporta il paragrafo esatto, con il link alla fonte.
 
 ## Fase 4 — La giornata (obiettivo: "l'ente centrale")
 
-- [ ] Goal + Key Result, collegati agli Space
-- [ ] Habit con `rrule`, logging a un tocco, streak calcolate
-- [ ] Task: scheduling, ricorrenze, priorità, riordino manuale, task da una nota
-- [ ] Schermata **Today**: bento con le 3-5 cose che contano, abitudini, inbox
+- [x] Goal + Key Result, collegati agli Space
+- [x] Habit con `rrule`, logging a un tocco, streak calcolate
+- [~] Task: scheduling ✅, priorità ✅, **Kanban** ✅ (fuori roadmap, vedi ADR 0003) ·
+      ricorrenze ⏳, riordino manuale dentro la colonna ⏳, task da una nota ⏳
+- [x] Schermata **Today**: bento, task di oggi, abitudini di oggi, inbox, avanzamento obiettivi
 - [ ] **Google Calendar**: OAuth, lettura eventi in Today, creazione evento da task
 - [ ] **Import da Notion**: parsing dell'export zip → items + collections + tag
 
@@ -128,6 +136,14 @@ l'app ti riporta il paragrafo esatto, con il link alla fonte.
 - **`collections.path` non ha ancora il trigger** che lo aggiorna quando si sposta
   una cartella: arriva in fase 2 col drag&drop dell'albero.
 - **Nessun rate limit** ancora, perché non c'è ancora un endpoint pubblico.
+- **Editor note provvisorio**: titolo + textarea su `body_text`, salvataggio con
+  debounce a 800 ms. BlockNote arriva in fase 2 (ADR 0003).
+- **Kanban senza riordino manuale**: `position` esiste in tabella ma il drag
+  imposta solo lo stato.
+- **`useState` + `useEffect` per l'optimistic UI** in cinque componenti;
+  `useOptimistic` sarebbe più corretto.
+- **`revalidatePath` a tappeto** in `apps/web/src/lib/actions.ts`: rigenera più
+  del necessario. Irrilevante con un utente solo.
 - **`analytics` (Logflare) disattivato** in `supabase/config.toml`: in locale non
   parte in modo affidabile e non ci serve. In cloud lo fornisce Supabase.
 - **Il magic link è verificato solo in locale** (invio → clic → `/auth/callback`

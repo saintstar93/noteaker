@@ -1,34 +1,62 @@
-import { ColoredCard, SurfaceCard } from '@/components/colored-card';
-import { ItemRow } from '@/components/item-row';
-import { DEMO_INBOX } from '@/lib/demo';
+import { calcolaStreak, isDueOn, toDateKey } from '@noteaker/core';
+import { cn } from '@noteaker/ui/cn';
+import Link from 'next/link';
+import { Etichetta } from '@/components/ui';
+import { SPACE_BG } from '@/lib/colors';
+import {
+  contaInbox,
+  getGoalsConKeyResults,
+  getHabitLogs,
+  getHabits,
+  getTaskDiOggi,
+} from '@/lib/queries';
+import { AbitudiniDiOggi } from './today-abitudini';
+import { TaskDiOggi } from './today-task';
 
-/**
- * TODAY — la schermata principale. In fase 0 mostra la griglia bento vuota,
- * col design definitivo: è esattamente il traguardo della fase
- * ("una schermata vuota ma tua, con i colori giusti").
- */
 /**
  * `new Date()` in un componente server viene valutato QUANDO la pagina viene
  * prodotta. Senza questa riga Next la prerenderebbe a build time e la data
- * resterebbe ferma al giorno del deploy. `force-dynamic` la fa generare a ogni
- * richiesta.
- *
- * TODO (fase 1): quando Today leggerà i dati dell'utente dal database sarà
- * dinamica di suo e questa riga si potrà togliere.
+ * resterebbe ferma al giorno del deploy.
  */
 export const dynamic = 'force-dynamic';
 
-export default function TodayPage() {
-  const oggi = new Intl.DateTimeFormat('it-IT', {
+export default async function TodayPage() {
+  const oggi = new Date();
+  const chiaveOggi = toDateKey(oggi);
+
+  const [tasks, habits, logs, goals, inbox] = await Promise.all([
+    getTaskDiOggi(),
+    getHabits(),
+    getHabitLogs(),
+    getGoalsConKeyResults(),
+    contaInbox(),
+  ]);
+
+  const abitudiniDiOggi = habits.filter((h) => isDueOn(h.rrule, oggi));
+  const fatteOggi = abitudiniDiOggi.filter((h) => logs.get(h.id)?.has(chiaveOggi)).length;
+
+  const daFare = tasks.filter((t) => t.status !== 'done');
+  const fatte = tasks.filter((t) => t.status === 'done');
+
+  const logsSerializzabili = Object.fromEntries(
+    [...logs.entries()].map(([habitId, giorni]) => [habitId, [...giorni]]),
+  );
+
+  const streakMigliore = habits.reduce(
+    (massimo, h) => Math.max(massimo, calcolaStreak(h.rrule, logs.get(h.id) ?? [], oggi)),
+    0,
+  );
+
+  const dataLeggibile = new Intl.DateTimeFormat('it-IT', {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
-  }).format(new Date());
+  }).format(oggi);
 
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-8">
       <header className="flex flex-col gap-2">
-        <p className="label text-fg-subtle">{oggi}</p>
+        <Etichetta>{dataLeggibile}</Etichetta>
         {/* Il display grande compare UNA volta per schermata (docs/03 §3). */}
         <h1 className="font-display font-extrabold text-[34px] leading-[1.05] tracking-[-0.02em] lg:text-[52px]">
           Le cose
@@ -39,34 +67,101 @@ export default function TodayPage() {
 
       {/* Griglia bento: 12 colonne, righe da 96px (docs/03 §4). */}
       <div className="grid grid-cols-1 gap-4 lg:auto-rows-[96px] lg:grid-cols-12">
-        <ColoredCard color="yellow" label="Task" className="lg:col-span-5 lg:row-span-2">
-          <p className="font-bold text-[22px] leading-tight">Nessun task per oggi</p>
-          <p className="mt-auto text-[13px] opacity-70">
-            Goal → Habit → Task arrivano nella fase 4.
+        <Link
+          href="/task"
+          className="flex flex-col gap-2 rounded-lg bg-yellow p-5 text-on-accent transition-transform duration-[120ms] ease-out hover:scale-[1.01] lg:col-span-5 lg:row-span-2"
+        >
+          <p className="label opacity-70">Task di oggi</p>
+          <p className="font-bold text-[28px] leading-tight">
+            {daFare.length === 0 ? 'Tutto fatto' : `${daFare.length} da chiudere`}
           </p>
-        </ColoredCard>
+          <p className="mt-auto text-[13px] opacity-70">
+            {fatte.length > 0 ? `${fatte.length} già fatte oggi` : 'Nessuna ancora completata'}
+          </p>
+        </Link>
 
-        <ColoredCard color="green" label="Abitudini" className="lg:col-span-3 lg:row-span-2">
-          <p className="font-bold text-[22px] leading-tight">0 / 0</p>
-          <p className="mt-auto text-[13px] opacity-70">Streak in arrivo.</p>
-        </ColoredCard>
+        <Link
+          href="/abitudini"
+          className="flex flex-col gap-2 rounded-lg bg-green p-5 text-on-accent transition-transform duration-[120ms] ease-out hover:scale-[1.01] lg:col-span-3 lg:row-span-2"
+        >
+          <p className="label opacity-70">Abitudini</p>
+          <p className="font-bold text-[28px] leading-tight">
+            {fatteOggi}/{abitudiniDiOggi.length}
+          </p>
+          <p className="mt-auto text-[13px] opacity-70">
+            {streakMigliore > 0 ? `Streak migliore: ${streakMigliore} giorni` : 'Nessuna streak'}
+          </p>
+        </Link>
 
-        <SurfaceCard label="Inbox" className="lg:col-span-4 lg:row-span-2">
-          <p className="font-bold text-[22px] leading-tight">{DEMO_INBOX.length} da smistare</p>
-          <p className="mt-auto text-[13px] text-fg-muted">Dati dimostrativi — fase 0.</p>
-        </SurfaceCard>
+        <Link
+          href="/inbox"
+          className="flex flex-col gap-2 rounded-lg bg-surface-2 p-5 transition-colors hover:bg-surface-3 lg:col-span-4"
+        >
+          <p className="label text-fg-subtle">Inbox</p>
+          <p className="font-bold text-[22px] leading-tight">
+            {inbox === 0 ? 'Vuota' : `${inbox} da smistare`}
+          </p>
+        </Link>
+
+        <Link
+          href="/obiettivi"
+          className="flex flex-col gap-2 rounded-lg bg-surface-2 p-5 transition-colors hover:bg-surface-3 lg:col-span-4"
+        >
+          <p className="label text-fg-subtle">Obiettivi attivi</p>
+          <p className="font-bold text-[22px] leading-tight">
+            {goals.filter((g) => g.status === 'active').length || 'Nessuno'}
+          </p>
+        </Link>
       </div>
 
-      <section className="flex flex-col gap-3">
-        <h2 className="label text-fg-subtle">Catturato di recente</h2>
-        <ul className="flex flex-col gap-2">
-          {DEMO_INBOX.map((item, i) => (
-            <li key={item.id}>
-              <ItemRow item={item} color={(['yellow', 'green', 'purple'] as const)[i % 3]} />
-            </li>
-          ))}
-        </ul>
-      </section>
+      <div className="grid gap-8 lg:grid-cols-2">
+        <TaskDiOggi tasks={tasks} goals={goals} />
+        <AbitudiniDiOggi habits={abitudiniDiOggi} logs={logsSerializzabili} giorno={chiaveOggi} />
+      </div>
+
+      {goals.length > 0 ? (
+        <section className="flex flex-col gap-3">
+          <Etichetta>Verso cosa stai andando</Etichetta>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {goals
+              .filter((g) => g.status === 'active')
+              .map((goal) => {
+                const kr = goal.key_results;
+                const media =
+                  kr.length === 0
+                    ? 0
+                    : Math.round(
+                        (kr.reduce((somma, k) => {
+                          const target = Number(k.target ?? 0);
+                          return somma + (target > 0 ? Math.min(1, Number(k.current) / target) : 0);
+                        }, 0) /
+                          kr.length) *
+                          100,
+                      );
+
+                return (
+                  <Link
+                    key={goal.id}
+                    href="/obiettivi"
+                    className="flex flex-col gap-2 rounded-md bg-surface-2 p-4 hover:bg-surface-3"
+                  >
+                    <p className="truncate font-medium text-[14px]">{goal.title}</p>
+                    <div className="h-1.5 overflow-hidden rounded-full bg-surface-3">
+                      <div
+                        className={cn(
+                          'h-full rounded-full',
+                          SPACE_BG[(goal.color ?? 'purple') as keyof typeof SPACE_BG],
+                        )}
+                        style={{ width: `${media}%` }}
+                      />
+                    </div>
+                    <p className="text-[11px] text-fg-subtle">{media}%</p>
+                  </Link>
+                );
+              })}
+          </div>
+        </section>
+      ) : null}
     </div>
   );
 }

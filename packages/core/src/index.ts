@@ -1,2 +1,3 @@
-export * from './capture.js';
-export * from './types.js';
+export * from './capture';
+export * from './habits';
+export * from './types';

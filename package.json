@@ -12,10 +12,12 @@
     "check": "biome check . && pnpm -r typecheck",
     "check:fix": "biome check --write .",
     "test": "vitest run",
-    "db:types": "supabase gen types typescript --local > packages/db/src/database.types.ts"
+    "db:types": "supabase gen types typescript --local > packages/db/src/database.types.ts",
+    "smoke": "node scripts/smoke-pagine.mjs"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.9",
+    "@supabase/ssr": "^0.12.4",
     "@supabase/supabase-js": "^2.112.3",
     "@types/pg": "^8.15.5",
     "dotenv": "^17.2.1",

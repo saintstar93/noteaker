@@ -1,21 +1,36 @@
-import { ItemRow } from '@/components/item-row';
-import { DEMO_INBOX } from '@/lib/demo';
+import { EmptyState } from '@/components/empty-state';
+import { TitoloSchermata } from '@/components/ui';
+import { getInbox, getTutteLeCollections } from '@/lib/queries';
+import { Smistamento } from './smistamento';
 
-export default function InboxPage() {
+export const dynamic = 'force-dynamic';
+
+export default async function InboxPage() {
+  const [items, destinazioni] = await Promise.all([getInbox(), getTutteLeCollections()]);
+
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-6">
-      <h1 className="font-display font-extrabold text-[34px] tracking-[-0.02em]">Inbox</h1>
-      <p className="text-[13px] text-fg-muted">
-        Tutto atterra qui. Nessuna decisione al momento della cattura: si smista dopo, con la
-        destinazione già proposta dall'AI (fase 3).
+    <div className="mx-auto flex max-w-3xl flex-col gap-8">
+      <TitoloSchermata sopra="Da smistare">Inbox</TitoloSchermata>
+
+      <p className="max-w-[68ch] text-[13px] text-fg-muted">
+        Tutto atterra qui. Nessuna decisione al momento della cattura: si sceglie dopo, in blocco.
+        Dalla Fase 3 la destinazione arriverà già proposta dall'AI e questo diventerà un tasto di
+        conferma.
       </p>
-      <ul className="flex flex-col gap-2">
-        {DEMO_INBOX.map((item, i) => (
-          <li key={item.id}>
-            <ItemRow item={item} color={(['yellow', 'green', 'purple'] as const)[i % 3]} />
-          </li>
-        ))}
-      </ul>
+
+      {items.length === 0 ? (
+        <EmptyState
+          title="Inbox vuota"
+          description="Qui finiranno gli articoli, i reel e i video che catturi da Chrome, dall'iPhone e da Telegram — la Fase 1 della roadmap. Per ora puoi creare note a mano dentro gli Spaces."
+        />
+      ) : destinazioni.length === 0 ? (
+        <EmptyState
+          title="Manca dove metterli"
+          description="Hai roba da smistare ma nessuna cartella in cui metterla. Crea prima uno Space e almeno una cartella."
+        />
+      ) : (
+        <Smistamento items={items} destinazioni={destinazioni} />
+      )}
     </div>
   );
 }

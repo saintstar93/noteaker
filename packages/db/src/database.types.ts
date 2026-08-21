@@ -82,6 +82,144 @@ export type Database = {
           },
         ]
       }
+      goals: {
+        Row: {
+          color: string | null
+          created_at: string
+          horizon: string
+          id: string
+          period_end: string | null
+          period_start: string | null
+          position: number
+          space_id: string | null
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+          why: string | null
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          horizon?: string
+          id?: string
+          period_end?: string | null
+          period_start?: string | null
+          position?: number
+          space_id?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          user_id?: string
+          why?: string | null
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          horizon?: string
+          id?: string
+          period_end?: string | null
+          period_start?: string | null
+          position?: number
+          space_id?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+          why?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "goals_space_id_fkey"
+            columns: ["space_id"]
+            isOneToOne: false
+            referencedRelation: "spaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      habit_logs: {
+        Row: {
+          done_on: string
+          habit_id: string
+          id: string
+          note: string | null
+          user_id: string
+          value: number
+        }
+        Insert: {
+          done_on?: string
+          habit_id: string
+          id?: string
+          note?: string | null
+          user_id?: string
+          value?: number
+        }
+        Update: {
+          done_on?: string
+          habit_id?: string
+          id?: string
+          note?: string | null
+          user_id?: string
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "habit_logs_habit_id_fkey"
+            columns: ["habit_id"]
+            isOneToOne: false
+            referencedRelation: "habits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      habits: {
+        Row: {
+          active: boolean
+          color: string | null
+          created_at: string
+          goal_id: string | null
+          id: string
+          position: number
+          rrule: string
+          target_per_period: number
+          title: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          color?: string | null
+          created_at?: string
+          goal_id?: string | null
+          id?: string
+          position?: number
+          rrule?: string
+          target_per_period?: number
+          title: string
+          user_id?: string
+        }
+        Update: {
+          active?: boolean
+          color?: string | null
+          created_at?: string
+          goal_id?: string | null
+          id?: string
+          position?: number
+          rrule?: string
+          target_per_period?: number
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "habits_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       items: {
         Row: {
           body: Json | null
@@ -153,6 +291,47 @@ export type Database = {
           },
         ]
       }
+      key_results: {
+        Row: {
+          current: number
+          goal_id: string
+          id: string
+          position: number
+          target: number | null
+          title: string
+          unit: string | null
+          user_id: string
+        }
+        Insert: {
+          current?: number
+          goal_id: string
+          id?: string
+          position?: number
+          target?: number | null
+          title: string
+          unit?: string | null
+          user_id?: string
+        }
+        Update: {
+          current?: number
+          goal_id?: string
+          id?: string
+          position?: number
+          target?: number | null
+          title?: string
+          unit?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "key_results_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -210,12 +389,81 @@ export type Database = {
         }
         Relationships: []
       }
+      tasks: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          due_on: string | null
+          estimate_min: number | null
+          goal_id: string | null
+          id: string
+          item_id: string | null
+          notes: string | null
+          position: number
+          priority: number
+          scheduled_for: string | null
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          due_on?: string | null
+          estimate_min?: number | null
+          goal_id?: string | null
+          id?: string
+          item_id?: string | null
+          notes?: string | null
+          position?: number
+          priority?: number
+          scheduled_for?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          due_on?: string | null
+          estimate_min?: number | null
+          goal_id?: string | null
+          id?: string
+          item_id?: string | null
+          notes?: string | null
+          position?: number
+          priority?: number
+          scheduled_for?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tasks_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      slugify: { Args: { valore: string }; Returns: string }
     }
     Enums: {
       item_kind:

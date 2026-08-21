@@ -25,8 +25,11 @@ BlockNote · Supabase (Postgres, RLS, pgvector, Edge Functions) · Vercel AI SDK
 | [`docs/06-sicurezza.md`](docs/06-sicurezza.md) | Modello di minaccia e checklist |
 | [`docs/adr/`](docs/adr/) | Decisioni architetturali |
 
-Stato: **Fase 0 in corso** — il monorepo esiste, l'app parte, lo schema con RLS
-è scritto. Mancano il progetto Supabase cloud e il deploy su Vercel.
+Stato: **Fase 0 chiusa.** In più, anticipate rispetto alla roadmap
+(vedi [ADR 0003](docs/adr/0003-produttivita-prima-della-cattura.md)):
+obiettivi, abitudini con streak, task con vista Kanban, Spaces con cartelle
+annidate e note. Mancano il progetto Supabase cloud, il deploy su Vercel e
+**tutta la Fase 1 (la cattura da Chrome, iPhone e Telegram)**.
 
 ## Sviluppo in locale
 
@@ -37,6 +40,11 @@ cp .env.example apps/web/.env.local   # Next legge l'env dalla cartella dell'app
 pnpm dev                     # http://localhost:3000
 
 supabase start               # Postgres + Auth locali (serve Docker)
-pnpm test                    # test RLS: richiede supabase start attivo
+pnpm test                    # 35 test: RLS, isolamento fra utenti, trigger, abitudini
 pnpm check && pnpm build     # devono passare prima di ogni push
+pnpm smoke                   # chiede ogni pagina con una sessione vera e
+                             # controlla che mostri davvero i dati (serve pnpm dev)
 ```
+
+Le email in locale non arrivano davvero: le intercetta **Mailpit** su
+http://127.0.0.1:54324. Supabase Studio è su http://127.0.0.1:54323.

@@ -1,14 +1,20 @@
 import type { ReactNode } from 'react';
 import { AppShell } from '@/components/app-shell';
-import { DEMO_SPACES } from '@/lib/demo';
+import { contaInbox, getSpaces } from '@/lib/queries';
 
 /**
  * Layout del gruppo "(app)": le parentesi nel nome della cartella creano un
  * gruppo di rotte — condividono questo layout senza aggiungere un segmento
  * all'URL. `/inbox` resta `/inbox`, non `/app/inbox`.
  *
- * TODO (fase 1): gli Space arrivano da Supabase, non da DEMO_SPACES.
+ * Le due query girano qui una volta sola e valgono per tutte le pagine dentro.
  */
-export default function AppLayout({ children }: { children: ReactNode }) {
-  return <AppShell spaces={DEMO_SPACES}>{children}</AppShell>;
+export default async function AppLayout({ children }: { children: ReactNode }) {
+  const [spaces, inbox] = await Promise.all([getSpaces(), contaInbox()]);
+
+  return (
+    <AppShell spaces={spaces} inbox={inbox}>
+      {children}
+    </AppShell>
+  );
 }
