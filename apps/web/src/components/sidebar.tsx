@@ -1,7 +1,16 @@
 'use client';
 
 import { cn } from '@noteaker/ui/cn';
-import { CheckSquare, FolderTree, Inbox, Repeat, Search, Sun, Target } from 'lucide-react';
+import {
+  CheckSquare,
+  FolderTree,
+  Inbox,
+  Repeat,
+  Search,
+  Settings,
+  Sun,
+  Target,
+} from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { SPACE_BG } from '@/lib/colors';
@@ -21,6 +30,7 @@ const NAV = [
   { href: '/obiettivi', label: 'Obiettivi', icon: Target },
   { href: '/spaces', label: 'Spaces', icon: FolderTree },
   { href: '/cerca', label: 'Cerca', icon: Search },
+  { href: '/impostazioni', label: 'Impostazioni', icon: Settings },
 ] as const;
 
 export function Sidebar({ spaces, inbox }: { spaces: SpaceRow[]; inbox: number }) {

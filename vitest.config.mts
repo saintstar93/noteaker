@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
@@ -13,5 +14,17 @@ export default defineConfig({
       rosso.
     */
     fileParallelism: false,
+  },
+  resolve: {
+    // I package del monorepo sono sorgenti TypeScript, non pacchetti
+    // compilati: Vitest va indirizzato al file, altrimenti non li trova.
+    alias: {
+      '@noteaker/core': fileURLToPath(
+        new globalThis.URL('./packages/core/src/index.ts', import.meta.url),
+      ),
+      '@noteaker/db': fileURLToPath(
+        new globalThis.URL('./packages/db/src/index.ts', import.meta.url),
+      ),
+    },
   },
 });

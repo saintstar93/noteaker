@@ -25,7 +25,7 @@ let userId: string;
 let spaceId: string;
 
 beforeAll(async () => {
-  const email = `trigger-${Date.now()}@test.local`;
+  const email = `trigger-${Date.now()}-${crypto.randomUUID().slice(0, 8)}@test.local`;
   const { data, error } = await admin.auth.admin.createUser({
     email,
     password: 'password123',

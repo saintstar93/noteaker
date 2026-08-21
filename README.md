@@ -23,13 +23,16 @@ BlockNote · Supabase (Postgres, RLS, pgvector, Edge Functions) · Vercel AI SDK
 | [`docs/04-roadmap.md`](docs/04-roadmap.md) | Fasi e caselle da spuntare |
 | [`docs/05-glossario.md`](docs/05-glossario.md) | Termini tecnici spiegati da zero |
 | [`docs/06-sicurezza.md`](docs/06-sicurezza.md) | Modello di minaccia e checklist |
+| [`docs/shortcut-ios.md`](docs/shortcut-ios.md) | Come catturare dall'iPhone col menu Condividi |
 | [`docs/adr/`](docs/adr/) | Decisioni architetturali |
 
 Stato: **Fase 0 chiusa.** In più, anticipate rispetto alla roadmap
 (vedi [ADR 0003](docs/adr/0003-produttivita-prima-della-cattura.md)):
 obiettivi, abitudini con streak, task con vista Kanban, Spaces con cartelle
-annidate e note. Mancano il progetto Supabase cloud, il deploy su Vercel e
-**tutta la Fase 1 (la cattura da Chrome, iPhone e Telegram)**.
+annidate e note. Della **Fase 1** ci sono l'endpoint `POST /api/capture` con i token
+revocabili e il rate limit, e la guida allo Shortcut iOS; mancano
+l'estensione Chrome e il bot Telegram. Mancano anche il progetto Supabase
+cloud e il deploy su Vercel.
 
 ## Sviluppo in locale
 

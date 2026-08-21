@@ -34,21 +34,21 @@ vuota ma tua, con i colori giusti.
 
 ## Fase 1 — Cattura e Inbox (obiettivo: "smetto di usare Notion per salvare cose")
 
-> ⚠️ **Fase saltata, ed è il debito più grosso aperto.** Il 21 agosto 2026 si è
-> scelto di anticipare produttività e organizzazione (ADR 0003). Risultato:
-> l'Inbox esiste e sa smistare, ma **nessun canale la alimenta** — niente
-> estensione, niente Shortcut, niente bot. Si riempie solo con note scritte a
-> mano. È la prossima cosa da fare.
+> Fase ripresa dopo l'anticipo di produttività e organizzazione (ADR 0003).
+> L'endpoint e i token ci sono; mancano ancora i tre canali che lo chiamano.
 
-- [ ] `POST /api/capture`: token → Zod → insert → 202. Rate limit. Test.
-- [ ] Sistema di `capture_tokens`: creazione, visualizzazione una tantum, revoca
+- [x] `POST /api/capture`: token → Zod → insert → 202. Rate limit (60/min per token). 11 test.
+- [x] Sistema di `capture_tokens`: creazione, visualizzazione una tantum, revoca
+      (pagina **Impostazioni**, con registro delle ultime chiamate)
 - [ ] Coda `pgmq` + `pg_cron` + `pg_net` + prima Edge Function (`enrich`)
 - [ ] Estrazione contenuto articoli (Readability) → titolo, autore, testo, immagine
-- [ ] Riconoscimento kind dall'URL: youtube → `video`, instagram/tiktok → `reel`, resto → `article`
+- [x] Riconoscimento kind dall'URL: youtube → `video`, instagram/tiktok → `reel`, resto → `article`
 - [ ] **Estensione Chrome MV3**: salva pagina, salva selezione come highlight
-- [ ] **Shortcut iOS** + istruzioni di installazione in `docs/shortcut-ios.md`
+- [~] **Shortcut iOS**: istruzioni scritte in `docs/shortcut-ios.md` — **mai provate
+      su un iPhone vero**, serve Daniele
 - [ ] **Bot Telegram**: webhook, verifica firma, link dell'account al `user_id`
-- [ ] Schermata **Inbox**: griglia, anteprime, smistamento rapido da tastiera
+- [~] Schermata **Inbox**: smistamento verso una cartella ✅ · anteprime e
+      scorciatoie da tastiera ⏳
 
 **Fatto quando:** in una settimana hai catturato 30 cose da tre dispositivi
 diversi senza mai aprire l'app apposta.

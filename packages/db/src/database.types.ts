@@ -34,6 +34,74 @@ export type Database = {
   }
   public: {
     Tables: {
+      capture_events: {
+        Row: {
+          created_at: string
+          id: number
+          source: string | null
+          status: number
+          token_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: never
+          source?: string | null
+          status: number
+          token_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: never
+          source?: string | null
+          status?: number
+          token_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "capture_events_token_id_fkey"
+            columns: ["token_id"]
+            isOneToOne: false
+            referencedRelation: "capture_tokens"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      capture_tokens: {
+        Row: {
+          created_at: string
+          id: string
+          last_used_at: string | null
+          name: string
+          revoked_at: string | null
+          token_hash: string
+          token_hint: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_used_at?: string | null
+          name: string
+          revoked_at?: string | null
+          token_hash: string
+          token_hint: string
+          user_id?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_used_at?: string | null
+          name?: string
+          revoked_at?: string | null
+          token_hash?: string
+          token_hint?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       collections: {
         Row: {
           created_at: string

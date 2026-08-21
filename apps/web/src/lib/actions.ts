@@ -3,6 +3,9 @@
 import {
   blocchiSchema,
   buildRrule,
+  generaToken,
+  impronta,
+  indizio,
   SPACE_COLORS,
   toDateKey,
   WEEKDAYS,
@@ -442,4 +445,51 @@ export async function eliminaTask(id: string) {
   await supabase.from('tasks').delete().eq('id', uuid.parse(id));
   revalidatePath('/task');
   revalidatePath('/');
+}
+
+// =====================================================================
+// TOKEN DI CATTURA
+// =====================================================================
+
+/**
+ * Crea un token e lo restituisce **in chiaro una sola volta**.
+ *
+ * In database finisce solo l'impronta SHA-256. Non esiste un modo di
+ * rileggerlo dopo: se lo perdi, se ne crea un altro e si revoca il vecchio.
+ * È scomodo di proposito — è ciò che rende il furto del database inutile
+ * (docs/06-sicurezza.md §3.4).
+ *
+ * Uno per fonte (Chrome, iPhone, Telegram) così se ne può revocare uno senza
+ * rompere gli altri.
+ */
+export async function creaCaptureToken(formData: FormData): Promise<string> {
+  const { supabase } = await requireUser();
+
+  const nome = testoBreve.parse(leggi(formData, 'name'));
+  const token = generaToken();
+
+  const { error } = await supabase.from('capture_tokens').insert({
+    name: nome,
+    token_hash: await impronta(token),
+    token_hint: indizio(token),
+  });
+  if (error) throw new Error(`Creazione del token fallita: ${error.message}`);
+
+  revalidatePath('/impostazioni');
+  return token;
+}
+
+/**
+ * Revoca, non cancella: la riga resta, con la data. Così il registro delle
+ * chiamate continua ad avere un token a cui riferirsi e si può capire cosa è
+ * successo prima della revoca.
+ */
+export async function revocaCaptureToken(id: string) {
+  const { supabase } = await requireUser();
+  await supabase
+    .from('capture_tokens')
+    .update({ revoked_at: new Date().toISOString() })
+    .eq('id', uuid.parse(id));
+
+  revalidatePath('/impostazioni');
 }

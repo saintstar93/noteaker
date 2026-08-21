@@ -182,3 +182,23 @@ export async function contaInbox(): Promise<number> {
     .eq('status', 'inbox');
   return count ?? 0;
 }
+
+export async function getCaptureTokens() {
+  const { supabase } = await requireUser();
+  const { data } = await supabase
+    .from('capture_tokens')
+    .select('*')
+    .order('created_at', { ascending: false });
+  return data ?? [];
+}
+
+/** Le ultime catture, per vedere se un canale funziona davvero. */
+export async function getCaptureEvents(limite = 20) {
+  const { supabase } = await requireUser();
+  const { data } = await supabase
+    .from('capture_events')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(limite);
+  return data ?? [];
+}
