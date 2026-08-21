@@ -19,8 +19,8 @@ Spunta le caselle man mano. Questo file è lo stato del progetto.
 - [ ] shadcn/ui — *rimandato*: i primi componenti Radix servono davvero solo con
       la command palette e i dialog (fase 2). Finora bastano componenti nostri.
 - [~] Supabase: `supabase start` locale ✅ · progetto cloud ⏳ (serve l'account di Daniele)
-- [x] Auth: magic link + Google OAuth, sessione con `@supabase/ssr` — **scritta,
-      non ancora provata end-to-end**: senza progetto cloud non c'è chi mandi l'email
+- [x] Auth: magic link + Google OAuth, sessione con `@supabase/ssr` — magic link
+      **provato end-to-end in locale**; Google ancora no (serve un client OAuth)
 - [x] Migrazione 001: `profiles`, `spaces`, `collections`, `items` + **RLS su tutto**
 - [x] Test automatico che fallisce se una tabella è senza RLS (`tests/rls.test.ts`)
 - [x] Design system: token in `@theme`, `AppShell` (sidebar + centro + pannello)
@@ -130,9 +130,11 @@ l'app ti riporta il paragrafo esatto, con il link alla fonte.
 - **Nessun rate limit** ancora, perché non c'è ancora un endpoint pubblico.
 - **`analytics` (Logflare) disattivato** in `supabase/config.toml`: in locale non
   parte in modo affidabile e non ci serve. In cloud lo fornisce Supabase.
-- **Il magic link non è mai stato cliccato davvero**: il flusso PKCE
-  (`/auth/callback`) è scritto ma verificato solo fino all'invio. Prima cosa da
-  provare a mano quando il progetto cloud esiste.
+- **Il magic link è verificato solo in locale** (invio → clic → `/auth/callback`
+  → sessione → Today). Sul progetto cloud va rifatto: cambiano `site_url` e le
+  `additional_redirect_urls`, ed è lì che il flusso si rompe più spesso.
+- **Google OAuth non è mai stato provato**: in locale non c'è un client Google
+  configurato. Si prova sul cloud.
 
 ## Idee parcheggiate
 
