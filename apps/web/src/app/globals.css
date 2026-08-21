@@ -88,3 +88,20 @@
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
+
+/*
+  BlockNote riserva 54px a sinistra per la maniglia del blocco (⠿) che compare
+  al passaggio del mouse. Senza compensare, il testo dell'editor risultava
+  rientrato rispetto al titolo della nota, che sta fuori dall'editor.
+  Qui si annulla il rientro a destra e si sposta il titolo di altrettanto,
+  così i due allineano — e la maniglia resta comunque visibile nel margine.
+*/
+@layer components {
+  .nota-editor .bn-editor {
+    padding-inline: 54px 0;
+  }
+
+  .nota-titolo {
+    padding-inline-start: 54px;
+  }
+}

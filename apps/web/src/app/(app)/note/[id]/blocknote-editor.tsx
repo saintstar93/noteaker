@@ -112,7 +112,7 @@ export function BlocknoteEditor({
   );
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="nota-editor flex flex-col gap-4">
       <input
         value={titolo}
         onChange={(e) => {
@@ -121,7 +121,7 @@ export function BlocknoteEditor({
         }}
         aria-label="Titolo della nota"
         placeholder="Senza titolo"
-        className="w-full bg-transparent font-display font-extrabold text-[32px] leading-tight tracking-[-0.02em] placeholder:text-fg-subtle"
+        className="nota-titolo w-full bg-transparent font-display font-extrabold text-[32px] leading-tight tracking-[-0.02em] placeholder:text-fg-subtle"
       />
 
       <BlockNoteView

@@ -1,10 +1,8 @@
-import { cn } from '@noteaker/ui/cn';
-import Link from 'next/link';
 import { EmptyState } from '@/components/empty-state';
 import { TitoloSchermata } from '@/components/ui';
-import { SPACE_BG } from '@/lib/colors';
 import { getSpaces } from '@/lib/queries';
 import { NuovoSpace } from './gestione-spaces';
+import { SchedaSpace } from './scheda-space';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,18 +23,7 @@ export default async function SpacesPage() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {spaces.map((space) => (
-            <Link
-              key={space.id}
-              href={`/spaces/${space.id}`}
-              className={cn(
-                'flex min-h-32 flex-col justify-between rounded-lg p-5 text-on-accent',
-                'transition-transform duration-[120ms] ease-out hover:scale-[1.01]',
-                SPACE_BG[(space.color ?? 'yellow') as keyof typeof SPACE_BG],
-              )}
-            >
-              <p className="label opacity-70">Space</p>
-              <p className="font-bold text-[22px] leading-tight">{space.name}</p>
-            </Link>
+            <SchedaSpace key={space.id} space={space} />
           ))}
         </div>
       )}

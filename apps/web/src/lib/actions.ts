@@ -56,9 +56,50 @@ export async function creaSpace(formData: FormData) {
   revalidatePath('/', 'layout');
 }
 
+export async function rinominaSpace(id: string, nome: string, nuovoColore?: string) {
+  const { supabase } = await requireUser();
+
+  const dati = z
+    .object({ id: uuid, name: testoBreve, color: colore.optional() })
+    .parse({ id, name: nome, color: nuovoColore });
+
+  await supabase
+    .from('spaces')
+    .update({ name: dati.name, ...(dati.color ? { color: dati.color } : {}) })
+    .eq('id', dati.id);
+
+  revalidatePath('/', 'layout');
+}
+
+/**
+ * Eliminare uno space è distruttivo e va capito prima di farlo:
+ * le sue cartelle spariscono a cascata (`on delete cascade`), mentre gli item
+ * che c'erano dentro NON vengono cancellati — la loro `collection_id` diventa
+ * nulla (`on delete set null`) e tornano in Inbox. Nessuna nota va persa.
+ * L'interfaccia lo dice esplicitamente prima di chiedere conferma.
+ */
 export async function eliminaSpace(id: string) {
   const { supabase } = await requireUser();
-  await supabase.from('spaces').delete().eq('id', uuid.parse(id));
+  const idValido = uuid.parse(id);
+
+  // Gli item delle cartelle di questo space tornano in inbox invece di
+  // restare invisibili con una collection_id azzerata.
+  const { data: cartelle } = await supabase
+    .from('collections')
+    .select('id')
+    .eq('space_id', idValido);
+
+  if (cartelle && cartelle.length > 0) {
+    await supabase
+      .from('items')
+      .update({ status: 'inbox' })
+      .in(
+        'collection_id',
+        cartelle.map((c) => c.id),
+      );
+  }
+
+  await supabase.from('spaces').delete().eq('id', idValido);
   revalidatePath('/', 'layout');
 }
 
