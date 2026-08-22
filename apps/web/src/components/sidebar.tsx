@@ -3,6 +3,7 @@
 import { cn } from '@noteaker/ui/cn';
 import {
   CheckSquare,
+  FolderKanban,
   FolderTree,
   Inbox,
   Repeat,
@@ -26,6 +27,7 @@ const NAV = [
   { href: '/', label: 'Today', icon: Sun },
   { href: '/inbox', label: 'Inbox', icon: Inbox },
   { href: '/task', label: 'Task', icon: CheckSquare },
+  { href: '/progetti', label: 'Progetti', icon: FolderKanban },
   { href: '/abitudini', label: 'Abitudini', icon: Repeat },
   { href: '/obiettivi', label: 'Obiettivi', icon: Target },
   { href: '/spaces', label: 'Spaces', icon: FolderTree },

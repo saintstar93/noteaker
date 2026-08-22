@@ -11,6 +11,10 @@ ogni tabella ha `user_id uuid not null default auth.uid()` e RLS attiva.
 
 ## 1. Mappa delle tabelle
 
+> Aggiornato il 22/08/2026: si sono aggiunte `projects` (ADR 0005),
+> `task_columns` (ADR 0006), `pomodoro_settings` e `pomodoro_sessions`
+> (ADR 0007), `capture_tokens` e `capture_events`.
+
 ```
 profiles
 │
@@ -23,8 +27,10 @@ profiles
 │     └── item_links      (backlink: item → item)
 │
 ├── goals ──── key_results
+│     ├── projects ──── tasks ──── task_columns
 │     └── habits ──── habit_logs
-│     └── tasks
+│
+├── pomodoro_settings / pomodoro_sessions
 │
 ├── reviews                (settimanali / mensili)
 ├── capture_tokens         (uno per fonte, hashati)

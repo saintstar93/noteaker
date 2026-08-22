@@ -139,7 +139,7 @@ const { data: habit } = await supabase
   .from('habits')
   .insert({
     title: 'Una lezione al giorno',
-    rrule: 'FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR',
+    rrule: 'FREQ=DAILY',
     color: 'green',
     goal_id: goal.id,
   })
@@ -150,18 +150,28 @@ await supabase
   .insert({ habit_id: habit.id, done_on: new Date().toISOString().slice(0, 10) });
 ok('abitudine e log di oggi', Boolean(habit?.id));
 
+// progetto — la catena è Obiettivo → Progetto → Task
+const { data: progetto } = await supabase
+  .from('projects')
+  .insert({ name: 'Corso Meta Ads', color: 'teal', goal_id: goal.id })
+  .select()
+  .single();
+ok('progetto collegato a un obiettivo', progetto?.goal_id === goal.id);
+
 // task + trigger completed_at
 const { data: task } = await supabase
   .from('tasks')
   .insert({
     title: 'Guardare lezione 4',
     goal_id: goal.id,
+    project_id: progetto.id,
     priority: 1,
     scheduled_for: new Date().toISOString().slice(0, 10),
   })
   .select()
   .single();
 ok('task creata senza completed_at', task?.completed_at === null);
+ok('la task nasce già dentro una colonna della board', Boolean(task?.column_id));
 const { data: fatta } = await supabase
   .from('tasks')
   .update({ status: 'done' })
@@ -188,8 +198,9 @@ await supabase.from('items').insert({
 // ---------- PAGINE: rispondono e mostrano i dati veri? ----------
 const pagine = [
   ['/', ['che contano oggi', 'Guardare lezione 4', 'Una lezione al giorno']],
-  ['/task', ['Task', 'Guardare lezione 4', 'Padroneggiare Meta Ads']],
-  ['/abitudini', ['Abitudini', 'Una lezione al giorno', 'Nei giorni feriali']],
+  ['/task', ['Task', 'Guardare lezione 4', 'Corso Meta Ads', 'Da fare']],
+  ['/progetti', ['Progetti', 'Corso Meta Ads']],
+  ['/abitudini', ['Abitudini', 'Una lezione al giorno', 'Ogni giorno']],
   ['/obiettivi', ['Obiettivi', 'Padroneggiare Meta Ads', 'Lezioni completate']],
   ['/spaces', ['Spaces', 'Corsi']],
   [`/spaces/${space.id}`, ['Corsi', 'Meta Advertising', 'Lezione 3']],

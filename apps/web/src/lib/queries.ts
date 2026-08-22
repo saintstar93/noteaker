@@ -202,3 +202,68 @@ export async function getCaptureEvents(limite = 20) {
     .limit(limite);
   return data ?? [];
 }
+
+// =====================================================================
+// Progetti, colonne del Kanban, Pomodoro
+// =====================================================================
+
+export async function getProjects() {
+  const { supabase } = await requireUser();
+  const { data } = await supabase
+    .from('projects')
+    .select('*')
+    .neq('status', 'archived')
+    .order('position');
+  return data ?? [];
+}
+
+/**
+ * Le colonne della board. Se un utente non ne avesse (per esempio perché
+ * creato prima della migrazione 005), gliene creiamo tre di partenza al
+ * volo: meglio una board utilizzabile che una schermata vuota da spiegare.
+ */
+export async function getTaskColumns() {
+  const { supabase, user } = await requireUser();
+
+  const { data } = await supabase.from('task_columns').select('*').order('position');
+  if (data && data.length > 0) return data;
+
+  await supabase.from('task_columns').insert([
+    { user_id: user.id, name: 'Da fare', color: 'blue', position: 0, is_done: false },
+    { user_id: user.id, name: 'In corso', color: 'yellow', position: 1, is_done: false },
+    { user_id: user.id, name: 'Fatto', color: 'green', position: 2, is_done: true },
+  ]);
+
+  const { data: create } = await supabase.from('task_columns').select('*').order('position');
+  return create ?? [];
+}
+
+export async function getPomodoroSettings() {
+  const { supabase, user } = await requireUser();
+
+  const { data } = await supabase.from('pomodoro_settings').select('*').maybeSingle();
+  if (data) return data;
+
+  const { data: nuove } = await supabase
+    .from('pomodoro_settings')
+    .insert({ user_id: user.id })
+    .select()
+    .single();
+  return nuove;
+}
+
+/** Quanti pomodori di lavoro completati oggi, per il conteggio dei cicli. */
+export async function getPomodoriDiOggi() {
+  const { supabase } = await requireUser();
+  const inizioGiornata = new Date();
+  inizioGiornata.setHours(0, 0, 0, 0);
+
+  const { count } = await supabase
+    .from('pomodoro_sessions')
+    .select('id', { count: 'exact', head: true })
+    .eq('kind', 'work')
+    .eq('completed', true)
+    .gte('ended_at', inizioGiornata.toISOString());
+
+  return count ?? 0;
+}

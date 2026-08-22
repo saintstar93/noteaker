@@ -400,6 +400,80 @@ export type Database = {
           },
         ]
       }
+      pomodoro_sessions: {
+        Row: {
+          completed: boolean
+          ended_at: string
+          id: string
+          kind: string
+          minutes: number
+          started_at: string
+          task_id: string | null
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean
+          ended_at?: string
+          id?: string
+          kind: string
+          minutes: number
+          started_at: string
+          task_id?: string | null
+          user_id?: string
+        }
+        Update: {
+          completed?: boolean
+          ended_at?: string
+          id?: string
+          kind?: string
+          minutes?: number
+          started_at?: string
+          task_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pomodoro_sessions_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pomodoro_settings: {
+        Row: {
+          auto_start_next: boolean
+          cycles_before_long: number
+          long_break_minutes: number
+          short_break_minutes: number
+          suono: boolean
+          updated_at: string
+          user_id: string
+          work_minutes: number
+        }
+        Insert: {
+          auto_start_next?: boolean
+          cycles_before_long?: number
+          long_break_minutes?: number
+          short_break_minutes?: number
+          suono?: boolean
+          updated_at?: string
+          user_id?: string
+          work_minutes?: number
+        }
+        Update: {
+          auto_start_next?: boolean
+          cycles_before_long?: number
+          long_break_minutes?: number
+          short_break_minutes?: number
+          suono?: boolean
+          updated_at?: string
+          user_id?: string
+          work_minutes?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -426,6 +500,63 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      projects: {
+        Row: {
+          color: string | null
+          created_at: string
+          description: string | null
+          goal_id: string | null
+          id: string
+          name: string
+          position: number
+          space_id: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          goal_id?: string | null
+          id?: string
+          name: string
+          position?: number
+          space_id?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          goal_id?: string | null
+          id?: string
+          name?: string
+          position?: number
+          space_id?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "projects_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "projects_space_id_fkey"
+            columns: ["space_id"]
+            isOneToOne: false
+            referencedRelation: "spaces"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       spaces: {
         Row: {
@@ -457,8 +588,39 @@ export type Database = {
         }
         Relationships: []
       }
+      task_columns: {
+        Row: {
+          color: string | null
+          created_at: string
+          id: string
+          is_done: boolean
+          name: string
+          position: number
+          user_id: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          is_done?: boolean
+          name: string
+          position?: number
+          user_id?: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          is_done?: boolean
+          name?: string
+          position?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       tasks: {
         Row: {
+          column_id: string | null
           completed_at: string | null
           created_at: string
           due_on: string | null
@@ -469,6 +631,7 @@ export type Database = {
           notes: string | null
           position: number
           priority: number
+          project_id: string | null
           scheduled_for: string | null
           status: string
           title: string
@@ -476,6 +639,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          column_id?: string | null
           completed_at?: string | null
           created_at?: string
           due_on?: string | null
@@ -486,6 +650,7 @@ export type Database = {
           notes?: string | null
           position?: number
           priority?: number
+          project_id?: string | null
           scheduled_for?: string | null
           status?: string
           title: string
@@ -493,6 +658,7 @@ export type Database = {
           user_id?: string
         }
         Update: {
+          column_id?: string | null
           completed_at?: string | null
           created_at?: string
           due_on?: string | null
@@ -503,6 +669,7 @@ export type Database = {
           notes?: string | null
           position?: number
           priority?: number
+          project_id?: string | null
           scheduled_for?: string | null
           status?: string
           title?: string
@@ -510,6 +677,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "tasks_column_id_fkey"
+            columns: ["column_id"]
+            isOneToOne: false
+            referencedRelation: "task_columns"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "tasks_goal_id_fkey"
             columns: ["goal_id"]
@@ -524,6 +698,13 @@ export type Database = {
             referencedRelation: "items"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "tasks_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
         ]
       }
     }
@@ -531,6 +712,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      crea_colonne_iniziali: { Args: { id_utente: string }; Returns: undefined }
       slugify: { Args: { valore: string }; Returns: string }
     }
     Enums: {

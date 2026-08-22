@@ -54,6 +54,9 @@ decisione si rivelasse sbagliata.
 | [0002](0002-shell-con-dati-demo-in-fase-0.md) | Il guscio dell'app funziona con dati finti in Fase 0 | Superato dai fatti: i dati finti sono stati rimossi il 21/08/2026 |
 | [0003](0003-produttivita-prima-della-cattura.md) | Produttività e organizzazione prima della cattura | Accettato |
 | [0004](0004-immagini-in-bucket-privato-con-url-firmati.md) | Immagini delle note in un bucket privato, servite con URL firmati | Accettato |
+| [0005](0005-progetti-fra-obiettivi-e-task.md) | Il progetto sta fra l'obiettivo e la task | Accettato |
+| [0006](0006-colonne-kanban-e-status.md) | Le colonne del Kanban sono dell'utente, ma `status` resta | Accettato |
+| [0007](0007-pomodoro-orario-di-fine.md) | Il pomodoro si basa sull'orario di fine, non su un contatore | Accettato |
 
 Le scelte iniziali di stack non hanno un ADR: sono già motivate, con le
 alternative scartate, in `01-architettura.md`.

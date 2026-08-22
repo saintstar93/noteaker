@@ -94,8 +94,12 @@ l'app ti riporta il paragrafo esatto, con il link alla fonte.
 
 - [x] Goal + Key Result, collegati agli Space
 - [x] Habit con `rrule`, logging a un tocco, streak calcolate
-- [~] Task: scheduling ✅, priorità ✅, **Kanban** ✅ (fuori roadmap, vedi ADR 0003) ·
+- [~] Task: scheduling ✅, priorità ✅, **Kanban con colonne personalizzabili** ✅
+      (ADR 0006), **raggruppamento per progetto** ✅ (ADR 0005) ·
       ricorrenze ⏳, riordino manuale dentro la colonna ⏳, task da una nota ⏳
+- [x] **Progetti**: Goal → Progetto → Task, entrambi i collegamenti facoltativi
+- [x] **Pomodoro** personalizzabile; impostazioni in database, quindi uguali su
+      Mac e iPhone (ADR 0007)
 - [x] Schermata **Today**: bento, task di oggi, abitudini di oggi, inbox, avanzamento obiettivi
 - [ ] **Google Calendar**: OAuth, lettura eventi in Today, creazione evento da task
 - [ ] **Import da Notion**: parsing dell'export zip → items + collections + tag
@@ -144,7 +148,12 @@ l'app ti riporta il paragrafo esatto, con il link alla fonte.
 - **Blocchi custom non ancora fatti**: `video-embed` con timestamp, `reel-card`,
   `highlight`, `book-quote` (sono una casella a parte della fase 2).
 - **Kanban senza riordino manuale**: `position` esiste in tabella ma il drag
-  imposta solo lo stato.
+  imposta solo la colonna, non l'ordine dentro la colonna.
+- **Le colonne si riordinano con le frecce**, non trascinandole.
+- **Il pomodoro non suona a scheda chiusa**: servirebbe una notifica, quindi la
+  PWA della fase 2 (ADR 0007).
+- **`tasks` ha sia `goal_id` sia `project_id`**: ridondanza voluta, da
+  rivalutare se si rivelasse confusa (ADR 0005).
 - **`useState` + `useEffect` per l'optimistic UI** in cinque componenti;
   `useOptimistic` sarebbe più corretto.
 - **`revalidatePath` a tappeto** in `apps/web/src/lib/actions.ts`: rigenera più

@@ -146,3 +146,97 @@ it('la stessa abitudine non si può registrare due volte nello stesso giorno', a
   expect(primo.error).toBeNull();
   expect(secondo.error).not.toBeNull();
 });
+
+it('spostare una task in una colonna "finale" la marca come fatta', async () => {
+  const { data: colonne } = await db.from('task_columns').select('*').order('position');
+  const daFare = colonne?.find((c) => !c.is_done);
+  const finale = colonne?.find((c) => c.is_done);
+  expect(daFare, 'colonne di partenza create dal trigger').toBeDefined();
+  expect(finale).toBeDefined();
+
+  const { data: task } = await db
+    .from('tasks')
+    .insert({ title: 'Da spostare', column_id: daFare?.id })
+    .select()
+    .single();
+  expect(task.status).toBe('todo');
+
+  const { data: spostata } = await db
+    .from('tasks')
+    .update({ column_id: finale?.id })
+    .eq('id', task.id)
+    .select()
+    .single();
+
+  // Lo `status` NON lo scrive l'app: lo allinea il trigger. È così che Today
+  // continua a sapere cosa resta da chiudere anche se la colonna si chiama
+  // "Consegnato" invece di "Fatto".
+  expect(spostata.status).toBe('done');
+  expect(spostata.completed_at).not.toBeNull();
+
+  const { data: riaperta } = await db
+    .from('tasks')
+    .update({ column_id: daFare?.id })
+    .eq('id', task.id)
+    .select()
+    .single();
+
+  expect(riaperta.status).toBe('todo');
+  expect(riaperta.completed_at).toBeNull();
+});
+
+it('ogni nuovo utente parte con tre colonne e le impostazioni del pomodoro', async () => {
+  const { data: colonne } = await db.from('task_columns').select('name, is_done').order('position');
+  expect(colonne?.map((c) => c.name)).toEqual(['Da fare', 'In corso', 'Fatto']);
+  expect(colonne?.filter((c) => c.is_done)).toHaveLength(1);
+
+  const { data: pomodoro } = await db.from('pomodoro_settings').select('*').single();
+  expect(pomodoro?.work_minutes).toBe(25);
+  expect(pomodoro?.cycles_before_long).toBe(4);
+});
+
+it('eliminare un progetto non cancella le sue task', async () => {
+  const { data: progetto } = await db
+    .from('projects')
+    .insert({ name: 'Rifare il sito' })
+    .select()
+    .single();
+
+  const { data: task } = await db
+    .from('tasks')
+    .insert({ title: 'Comprare il dominio', project_id: progetto.id })
+    .select()
+    .single();
+
+  await db.from('projects').delete().eq('id', progetto.id);
+
+  const { data: sopravvissuta } = await db
+    .from('tasks')
+    .select('id, project_id')
+    .eq('id', task.id)
+    .single();
+
+  expect(sopravvissuta?.id).toBe(task.id);
+  expect(sopravvissuta?.project_id).toBeNull();
+});
+
+it('una task creata senza colonna finisce nella prima della board', async () => {
+  // È il caso della cattura da fuori e di ogni scrittura che non passa
+  // dall'interfaccia. Senza questo, la task resterebbe con `column_id` nullo
+  // e non comparirebbe in NESSUNA colonna del Kanban: sparirebbe in silenzio.
+  const { data: task } = await db
+    .from('tasks')
+    .insert({ title: 'Nata senza colonna' })
+    .select()
+    .single();
+
+  expect(task.column_id).not.toBeNull();
+
+  const { data: colonna } = await db
+    .from('task_columns')
+    .select('position')
+    .eq('id', task.column_id)
+    .single();
+
+  expect(colonna?.position).toBe(0);
+});

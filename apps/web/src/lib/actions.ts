@@ -377,25 +377,39 @@ export async function creaTask(formData: FormData) {
   const dati = z
     .object({
       title: testoBreve,
+      project_id: uuid.nullable(),
       goal_id: uuid.nullable(),
+      column_id: uuid.nullable(),
       priority: z.coerce.number().int().min(1).max(3),
       scheduled_for: z.iso.date().nullable(),
-      status: z.enum(STATI_TASK),
     })
     .parse({
       title: leggi(formData, 'title'),
+      project_id: leggi(formData, 'project_id') ?? null,
       goal_id: leggi(formData, 'goal_id') ?? null,
+      column_id: leggi(formData, 'column_id') ?? null,
       priority: leggi(formData, 'priority') ?? 2,
       scheduled_for: leggi(formData, 'scheduled_for') ?? null,
-      status: leggi(formData, 'status') ?? 'todo',
     });
+
+  // Senza colonna indicata, la task entra nella prima della board.
+  let colonna = dati.column_id;
+  if (!colonna) {
+    const { data } = await supabase
+      .from('task_columns')
+      .select('id')
+      .order('position')
+      .limit(1)
+      .maybeSingle();
+    colonna = data?.id ?? null;
+  }
 
   const { count } = await supabase
     .from('tasks')
     .select('id', { count: 'exact', head: true })
-    .eq('status', dati.status);
+    .eq('column_id', colonna ?? '');
 
-  await supabase.from('tasks').insert({ ...dati, position: count ?? 0 });
+  await supabase.from('tasks').insert({ ...dati, column_id: colonna, position: count ?? 0 });
 
   revalidatePath('/task');
   revalidatePath('/');
@@ -492,4 +506,227 @@ export async function revocaCaptureToken(id: string) {
     .eq('id', uuid.parse(id));
 
   revalidatePath('/impostazioni');
+}
+
+// =====================================================================
+// PROGETTI
+// =====================================================================
+
+export async function creaProject(formData: FormData) {
+  const { supabase } = await requireUser();
+
+  const dati = z
+    .object({
+      name: testoBreve,
+      color: colore,
+      goal_id: uuid.nullable(),
+      space_id: uuid.nullable(),
+      description: z.string().trim().max(1000).nullable(),
+    })
+    .parse({
+      name: leggi(formData, 'name'),
+      color: leggi(formData, 'color') ?? 'blue',
+      goal_id: leggi(formData, 'goal_id') ?? null,
+      space_id: leggi(formData, 'space_id') ?? null,
+      description: leggi(formData, 'description') ?? null,
+    });
+
+  const { count } = await supabase.from('projects').select('id', { count: 'exact', head: true });
+  await supabase.from('projects').insert({ ...dati, position: count ?? 0 });
+
+  revalidatePath('/task');
+  revalidatePath('/progetti');
+}
+
+export async function rinominaProject(id: string, nome: string, nuovoColore?: string) {
+  const { supabase } = await requireUser();
+
+  const dati = z
+    .object({ id: uuid, name: testoBreve, color: colore.optional() })
+    .parse({ id, name: nome, color: nuovoColore });
+
+  await supabase
+    .from('projects')
+    .update({ name: dati.name, ...(dati.color ? { color: dati.color } : {}) })
+    .eq('id', dati.id);
+
+  revalidatePath('/task');
+  revalidatePath('/progetti');
+}
+
+export async function cambiaStatoProject(id: string, stato: 'active' | 'done' | 'archived') {
+  const { supabase } = await requireUser();
+  await supabase
+    .from('projects')
+    .update({ status: z.enum(['active', 'done', 'archived']).parse(stato) })
+    .eq('id', uuid.parse(id));
+
+  revalidatePath('/task');
+  revalidatePath('/progetti');
+}
+
+/** Eliminare un progetto non cancella le sue task: restano, senza progetto. */
+export async function eliminaProject(id: string) {
+  const { supabase } = await requireUser();
+  await supabase.from('projects').delete().eq('id', uuid.parse(id));
+
+  revalidatePath('/task');
+  revalidatePath('/progetti');
+}
+
+// =====================================================================
+// COLONNE DEL KANBAN
+// =====================================================================
+
+export async function creaColonna(formData: FormData) {
+  const { supabase } = await requireUser();
+
+  const dati = z.object({ name: testoBreve, color: colore, is_done: z.boolean() }).parse({
+    name: leggi(formData, 'name'),
+    color: leggi(formData, 'color') ?? 'blue',
+    is_done: leggi(formData, 'is_done') === 'on',
+  });
+
+  const { count } = await supabase
+    .from('task_columns')
+    .select('id', { count: 'exact', head: true });
+  await supabase.from('task_columns').insert({ ...dati, position: count ?? 0 });
+
+  revalidatePath('/task');
+}
+
+export async function aggiornaColonna(
+  id: string,
+  campi: { name?: string; color?: string; is_done?: boolean },
+) {
+  const { supabase } = await requireUser();
+
+  const dati = z
+    .object({
+      id: uuid,
+      name: testoBreve.optional(),
+      color: colore.optional(),
+      is_done: z.boolean().optional(),
+    })
+    .parse({ id, ...campi });
+
+  const { id: _, ...aggiornamenti } = dati;
+  await supabase.from('task_columns').update(aggiornamenti).eq('id', dati.id);
+
+  revalidatePath('/task');
+  revalidatePath('/');
+}
+
+/**
+ * Eliminare una colonna: le sue task non spariscono, si spostano nella prima
+ * colonna rimasta. Perdere delle task perché hai riorganizzato la board
+ * sarebbe inaccettabile.
+ */
+export async function eliminaColonna(id: string) {
+  const { supabase } = await requireUser();
+  const idValido = uuid.parse(id);
+
+  const { data: colonne } = await supabase.from('task_columns').select('id').order('position');
+  if (!colonne || colonne.length <= 1) {
+    throw new Error('Serve almeno una colonna: la board non può restare senza.');
+  }
+
+  const rifugio = colonne.find((c) => c.id !== idValido);
+  if (rifugio) {
+    await supabase.from('tasks').update({ column_id: rifugio.id }).eq('column_id', idValido);
+  }
+
+  await supabase.from('task_columns').delete().eq('id', idValido);
+  revalidatePath('/task');
+}
+
+export async function riordinaColonne(idsInOrdine: string[]) {
+  const { supabase } = await requireUser();
+  const ids = z.array(uuid).max(20).parse(idsInOrdine);
+
+  await Promise.all(
+    ids.map((id, posizione) =>
+      supabase.from('task_columns').update({ position: posizione }).eq('id', id),
+    ),
+  );
+
+  revalidatePath('/task');
+}
+
+/** Sposta una task in una colonna. Lo `status` lo allinea un trigger. */
+export async function spostaTaskInColonna(taskId: string, columnId: string, posizione = 0) {
+  const { supabase } = await requireUser();
+
+  const dati = z
+    .object({ taskId: uuid, columnId: uuid, position: z.number().int().min(0) })
+    .parse({ taskId, columnId, position: posizione });
+
+  await supabase
+    .from('tasks')
+    .update({ column_id: dati.columnId, position: dati.position })
+    .eq('id', dati.taskId);
+
+  revalidatePath('/task');
+  revalidatePath('/');
+}
+
+// =====================================================================
+// POMODORO
+// =====================================================================
+
+export async function salvaImpostazioniPomodoro(formData: FormData) {
+  const { supabase, user } = await requireUser();
+
+  const dati = z
+    .object({
+      work_minutes: z.coerce.number().int().min(1).max(180),
+      short_break_minutes: z.coerce.number().int().min(1).max(60),
+      long_break_minutes: z.coerce.number().int().min(1).max(120),
+      cycles_before_long: z.coerce.number().int().min(2).max(12),
+      auto_start_next: z.boolean(),
+      suono: z.boolean(),
+    })
+    .parse({
+      work_minutes: leggi(formData, 'work_minutes') ?? 25,
+      short_break_minutes: leggi(formData, 'short_break_minutes') ?? 5,
+      long_break_minutes: leggi(formData, 'long_break_minutes') ?? 15,
+      cycles_before_long: leggi(formData, 'cycles_before_long') ?? 4,
+      auto_start_next: leggi(formData, 'auto_start_next') === 'on',
+      suono: leggi(formData, 'suono') === 'on',
+    });
+
+  await supabase.from('pomodoro_settings').upsert({ user_id: user.id, ...dati });
+
+  revalidatePath('/impostazioni');
+  revalidatePath('/', 'layout');
+}
+
+/** Registra una sessione conclusa. `completed: false` = interrotta a metà. */
+export async function registraPomodoro(
+  kind: 'work' | 'short_break' | 'long_break',
+  minuti: number,
+  iniziataIl: string,
+  taskId?: string | null,
+  completata = true,
+) {
+  const { supabase } = await requireUser();
+
+  const dati = z
+    .object({
+      kind: z.enum(['work', 'short_break', 'long_break']),
+      minutes: z.number().int().min(0).max(180),
+      started_at: z.iso.datetime(),
+      task_id: uuid.nullable(),
+      completed: z.boolean(),
+    })
+    .parse({
+      kind,
+      minutes: Math.round(minuti),
+      started_at: iniziataIl,
+      task_id: taskId ?? null,
+      completed: completata,
+    });
+
+  await supabase.from('pomodoro_sessions').insert(dati);
+  revalidatePath('/');
 }

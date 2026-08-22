@@ -1,27 +1,27 @@
 'use client';
 
 import { cn } from '@noteaker/ui/cn';
-import { Calendar, Trash2 } from 'lucide-react';
-import { eliminaTask, spostaTask } from '@/lib/actions';
+import { Calendar, Timer, Trash2 } from 'lucide-react';
+import { eliminaTask, spostaTaskInColonna } from '@/lib/actions';
 import { SPACE_BG } from '@/lib/colors';
-import { COLONNE_KANBAN, ETICHETTA_PRIORITA, type Goal, type Task } from '@/lib/types';
+import { ETICHETTA_PRIORITA, type Project, type Task, type TaskColumn } from '@/lib/types';
 
-const COLORE_PRIORITA: Record<number, keyof typeof SPACE_BG> = {
-  1: 'red',
-  2: 'yellow',
-  3: 'blue',
-};
+const COLORE_PRIORITA: Record<number, keyof typeof SPACE_BG> = { 1: 'red', 2: 'yellow', 3: 'blue' };
 
 export function TaskCard({
   task,
-  goal,
+  progetto,
+  colonne,
   onDragStart,
   trascinabile,
+  onAvviaPomodoro,
 }: {
   task: Task;
-  goal?: Goal;
+  progetto?: Project;
+  colonne: TaskColumn[];
   onDragStart?: () => void;
   trascinabile?: boolean;
+  onAvviaPomodoro?: (task: Task) => void;
 }) {
   return (
     <article
@@ -53,10 +53,17 @@ export function TaskCard({
 
       <div className="flex flex-wrap items-center gap-2 text-[11px] text-fg-subtle">
         <span>{ETICHETTA_PRIORITA[task.priority]}</span>
-        {goal ? (
+        {progetto ? (
           <>
             <span aria-hidden>·</span>
-            <span className="truncate">{goal.title}</span>
+            <span
+              className={cn(
+                'rounded-full px-1.5 py-0.5 text-on-accent',
+                SPACE_BG[(progetto.color ?? 'blue') as keyof typeof SPACE_BG],
+              )}
+            >
+              {progetto.name}
+            </span>
           </>
         ) : null}
         {task.scheduled_for ? (
@@ -79,17 +86,28 @@ export function TaskCard({
           il drag resta una scorciatoia, non l'unico modo (docs/03 §7).
         */}
         <select
-          aria-label={`Stato di "${task.title}"`}
-          value={task.status}
-          onChange={(e) => spostaTask(task.id, e.target.value)}
+          aria-label={`Colonna di "${task.title}"`}
+          value={task.column_id ?? ''}
+          onChange={(e) => spostaTaskInColonna(task.id, e.target.value)}
           className="min-h-8 rounded-sm bg-surface-3 px-2 text-[11px] text-fg-muted [&>option]:bg-surface-2"
         >
-          {COLONNE_KANBAN.map((c) => (
-            <option key={c.stato} value={c.stato}>
-              {c.titolo}
+          {colonne.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.name}
             </option>
           ))}
         </select>
+
+        {onAvviaPomodoro && task.status !== 'done' ? (
+          <button
+            type="button"
+            onClick={() => onAvviaPomodoro(task)}
+            aria-label={`Avvia un pomodoro su "${task.title}"`}
+            className="rounded-sm p-1.5 text-fg-subtle hover:bg-surface-3 hover:text-fg"
+          >
+            <Timer aria-hidden size={13} />
+          </button>
+        ) : null}
 
         <button
           type="button"
